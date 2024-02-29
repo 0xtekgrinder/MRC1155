@@ -5,12 +5,17 @@ import {
   boolToByte,
   byteToBool,
   u256ToBytes,
+  Args,
 } from '@massalabs/as-types';
 import {
   Storage,
   Context,
   createEvent,
   generateEvent,
+  isAddressEoa,
+  functionExists,
+  call,
+  Address,
 } from '@massalabs/massa-as-sdk';
 
 import { u256 } from 'as-bignum/assembly';
@@ -197,56 +202,84 @@ export function _update(
   }
 }
 
-export function _transferFrom(
-  from: string,
-  to: string,
-  id: u256,
-  value: u256,
-): void {
-  assert(to != '', 'ERC1155InvalidReceiver');
-  assert(from != '', 'ERC1155InvalidSender');
-
-  _update(from, to, [id], [value]);
-}
-
-export function _batchTransferFrom(
+export function _updateWithAcceptanceCheck(
   from: string,
   to: string,
   ids: u256[],
   values: u256[],
+  data: StaticArray<u8>
+): void {
+  _update(from, to, ids, values);
+  if (to != "") {
+    const operator = Context.caller().toString();
+    const toAddress = new Address(to);
+    if (ids.length == 1) {
+      const id = ids[0];
+      const value = values[0];
+      if (!isAddressEoa(to) && functionExists(toAddress, 'onERC1155Received')) {
+        call(toAddress, 'onERC1155Received', new Args().add(operator).add(from).add(id).add(value).add(data), 0);
+      }
+    } else {
+      if (!isAddressEoa(to) && functionExists(toAddress, 'onERC1155BatchReceived')) {
+        call(toAddress, 'onERC1155BatchReceived', new Args().add(operator).add(from).add(ids).add(values).add(data), 0);
+      }
+    }
+  }
+}
+
+export function _safeTransferFrom(
+  from: string,
+  to: string,
+  id: u256,
+  value: u256,
+  data: StaticArray<u8>,
 ): void {
   assert(to != '', 'ERC1155InvalidReceiver');
   assert(from != '', 'ERC1155InvalidSender');
 
-  _update(from, to, ids, values);
+  _updateWithAcceptanceCheck(from, to, [id], [value], data);
 }
 
-export function _mint(to: string, id: u256, value: u256): void {
+export function _batchSafeTransferFrom(
+  from: string,
+  to: string,
+  ids: u256[],
+  values: u256[],
+  data: StaticArray<u8>,
+): void {
   assert(to != '', 'ERC1155InvalidReceiver');
-
-  _update('', to, [id], [value]);
-}
-
-export function _mintBatch(to: string, ids: u256[], values: u256[]): void {
-  assert(to != '', 'ERC1155InvalidReceiver');
-
-  _update('', to, ids, values);
-}
-
-export function _burn(from: string, id: u256, value: u256): void {
   assert(from != '', 'ERC1155InvalidSender');
 
-  _update(from, '', [id], [value]);
+  _updateWithAcceptanceCheck(from, to, ids, values, data);
+}
+
+export function _mint(to: string, id: u256, value: u256, data: StaticArray<u8>): void {
+  assert(to != '', 'ERC1155InvalidReceiver');
+
+  _updateWithAcceptanceCheck('', to, [id], [value], data);
+}
+
+export function _mintBatch(to: string, ids: u256[], values: u256[], data: StaticArray<u8>): void {
+  assert(to != '', 'ERC1155InvalidReceiver');
+
+  _updateWithAcceptanceCheck('', to, ids, values, data);
+}
+
+export function _burn(from: string, id: u256, value: u256, data: StaticArray<u8>): void {
+  assert(from != '', 'ERC1155InvalidSender');
+
+  _updateWithAcceptanceCheck(from, '', [id], [value], data);
 }
 
 export function _burnBatch(
   from: string,
   ids: u256[],
   values: u256[],
+  data: StaticArray<u8>
 ): void {
   assert(from != '', 'ERC1155InvalidSender');
 
-  _update(from, '', ids, values);
+  _updateWithAcceptanceCheck(from, '', ids, values, data);
 }
 
 /**

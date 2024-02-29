@@ -23,8 +23,8 @@ import {
   _uri,
   _setApprovalForAll,
   _isApprovedForAll,
-  _transferFrom,
-  _batchTransferFrom,
+  _safeTransferFrom,
+  _batchSafeTransferFrom,
 } from './token-internal';
 
 import { Context, isDeployingContract } from '@massalabs/massa-as-sdk';
@@ -91,19 +91,20 @@ export function isApprovedForAll(binaryArgs: StaticArray<u8>): StaticArray<u8> {
   return boolToByte(_isApprovedForAll(owner, operator));
 }
 
-export function transferFrom(binaryArgs: StaticArray<u8>): void {
+export function safeTransferFrom(binaryArgs: StaticArray<u8>): void {
   const sender = Context.caller().toString();
   const args = new Args(binaryArgs);
   const from = args.nextString().expect('from argument is missing or invalid');
   const to = args.nextString().expect('to argument is missing or invalid');
   const id = args.nextU256().expect('id argument is missing or invalid');
   const value = args.nextU256().expect('value argument is missing or invalid');
+  const data = args.nextBytes().expect('data argument is missing or invalid');
   assert(from != sender && _isApprovedForAll(from, sender), 'ERC1155MissingApprovalForAll');
 
-  _transferFrom(from, to, id, value);
+  _safeTransferFrom(from, to, id, value, data);
 }
 
-export function batchTransferFrom(binaryArgs: StaticArray<u8>): void {
+export function batchSafeTransferFrom(binaryArgs: StaticArray<u8>): void {
   const sender = Context.caller().toString();
   const args = new Args(binaryArgs);
   const from = args
@@ -116,7 +117,10 @@ export function batchTransferFrom(binaryArgs: StaticArray<u8>): void {
   const values = args
     .nextU256Array()
     .expect('values argument is missing or invalid');
+    const data = args
+    .nextBytes()
+    .expect('data argument is missing or invalid');
   assert(from != sender && _isApprovedForAll(from, sender), 'ERC1155MissingApprovalForAll');
 
-  _batchTransferFrom(from, to, ids, values);
+  _batchSafeTransferFrom(from, to, ids, values, data);
 }
