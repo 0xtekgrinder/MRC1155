@@ -12,7 +12,6 @@ import {
   Context,
   createEvent,
   generateEvent,
-  isAddressEoa,
   functionExists,
   call,
   Address,
@@ -25,6 +24,21 @@ export const URI_KEY: StaticArray<u8> = [0x01];
 export const BALANCE_KEY_PREFIX: StaticArray<u8> = [0x02];
 export const OPERATOR_APPROVAL_KEY_PREFIX: StaticArray<u8> = [0x03];
 export const ALLOWANCE_KEY_PREFIX: StaticArray<u8> = [0x04];
+
+export const APPROVAL_FOR_ALL_EVENT: string = 'ApprovalForAll';
+export const TRANSFER_SINGLE_EVENT: string = 'TransferSingle';
+export const TRANSFER_BATCH_EVENT: string = 'TransferBatch';
+
+export const INVALID_OPERATOR_ERROR: string = 'InvalidOperator';
+export const ERC1155_BALANCE_OVERFLOW_ERROR: string = 'ERC1155BalanceOverflow';
+export const ERC1155_INSUFFICIENT_BALANCE_ERROR: string =
+  'ERC1155InsufficientBalance';
+export const ERC1155_INVALID_ARRAY_LENGTH_ERROR: string =
+  'ERC1155InvalidArrayLength';
+export const ERC1155_INVALID_RECEIVER_ERROR: string = 'ERC1155InvalidReceiver';
+export const ERC1155_INVALID_SENDER_ERROR: string = 'ERC1155InvalidSender';
+export const ERC1155_MISSING_APPROVAL_FOR_ALL_ERROR: string =
+  'ERC1155MissingApprovalForAll';
 
 /**
  * Constructs a new Multi-NFT contract.
@@ -39,8 +53,9 @@ export function _constructor(uri: string): void {
 }
 
 /**
- * @param address - address to get the balance for
- * @returns the key of the balance in the storage for the given address
+ * @param id - the id of the token
+ * @param address - the address of the owner
+ * @returns the key of the balance in the storage for the given id and address
  */
 function balanceKey(id: u256, address: string): StaticArray<u8> {
   return BALANCE_KEY_PREFIX.concat(
@@ -49,10 +64,9 @@ function balanceKey(id: u256, address: string): StaticArray<u8> {
 }
 
 /**
- *
  * @param owner - the address of the owner
  * @param operator - the address of the operator
- * @returns The key of the operator allowance in the storage for the given owner and operator
+ * @returns the key of the operator approval in the storage for the given owner and operator
  */
 function operatorApprovalKey(owner: string, operator: string): StaticArray<u8> {
   return OPERATOR_APPROVAL_KEY_PREFIX.concat(
@@ -61,67 +75,68 @@ function operatorApprovalKey(owner: string, operator: string): StaticArray<u8> {
 }
 
 /**
- * Count all NFTs assigned to an owner.
- *
- * @param owner - An address for whom to query the balance
+ * @param owner - the address of the owner
+ * @param spender - the address of the spender
+ * @returns the key of the allowance in the storage for the given owner and spender
  */
 export function _balanceOf(owner: string, id: u256): u256 {
   const key = balanceKey(id, owner);
   return Storage.has(key) ? bytesToU256(Storage.get(key)) : u256.Zero;
 }
 
+/**
+ * @param owner - the address of the owner
+ * @param id - the id of the token
+ * @returns the balance of the token for the address
+ */
 export function _balanceOfBatch(owners: string[], ids: u256[]): u256[] {
-  const balances = new Array<u256>(owners.length);
-  for (let i = 0; i < owners.length; i++) {
+  const balances = new Array<u256>(ids.length);
+  for (let i = 0; i < ids.length; i++) {
     balances[i] = _balanceOf(owners[i], ids[i]);
   }
   return balances;
 }
 
 /**
- * Returns the URI for a given token ID.
- *
- * @param _ - The token ID
- * @returns the URI for the given token ID or an empty string if the URI is not set.
+ * @param id - the id of the token
+ * @returns the URI for the token
  */
 export function _uri(_: u256): string {
   return Storage.has(URI_KEY) ? bytesToString(Storage.get(URI_KEY)) : '';
 }
 
+/**
+ * Set the URI for the NFT contract
+ * @param newUri - the new URI
+ */
 export function _setURI(newUri: string): void {
   Storage.set(URI_KEY, stringToBytes(newUri));
 }
 
 /**
- * Change ,reaffirm or revoke the approved address for an NFT.
- * Checks that the caller is the NFT owner or has been approved by the owner.
- *
- * @param id - The NFT to approve
- * @param approved - The new approved NFT operator
- *
- * @remarks If approved is the zero address, the function will clear the approval for the NFT by deleting the key.
- *
+ * Set the approval status of an operator for all tokens of the owner
+ * @param operator - the operator to set the approval for
+ * @param approved - the approval status
  */
 export function _setApprovalForAll(
   owner: string,
   operator: string,
   approved: bool,
 ): void {
-  assert(operator == '', 'Invalid operator');
+  assert(operator != '', INVALID_OPERATOR_ERROR);
 
   const key = operatorApprovalKey(owner, operator);
   approved ? Storage.set(key, boolToByte(true)) : Storage.del(key);
 
   generateEvent(
-    createEvent('ApprovalForAll', [owner, operator, approved.toString()]),
+    createEvent(APPROVAL_FOR_ALL_EVENT, [owner, operator, approved.toString()]),
   );
 }
 
 /**
- * Query if an address is an authorized operator for another address
- * @param owner - The address that owns the NFTs
- * @param operator - The address that acts on behalf of the owner
- * @returns true if the operator is approved for all, false if not
+ * @param owner - the address of the owner
+ * @param operator - the address of the operator
+ * @returns the approval status of the operator for the owner
  */
 export function _isApprovedForAll(owner: string, operator: string): bool {
   const key = operatorApprovalKey(owner, operator);
@@ -152,7 +167,7 @@ export function _update(
   ids: u256[],
   values: u256[],
 ): void {
-  assert(ids.length == values.length, 'ERC1155InvalidArrayLength');
+  assert(ids.length == values.length, ERC1155_INVALID_ARRAY_LENGTH_ERROR);
 
   const operator = Context.caller().toString();
 
@@ -165,7 +180,7 @@ export function _update(
       const fromBalance = Storage.has(fromBalanceKey)
         ? bytesToU256(Storage.get(fromBalanceKey))
         : u256.Zero;
-      assert(fromBalance >= value, 'ERC1155InsufficientBalance');
+      assert(fromBalance >= value, ERC1155_INSUFFICIENT_BALANCE_ERROR);
       Storage.set(fromBalanceKey, u256ToBytes(fromBalance - value));
     }
 
@@ -174,14 +189,17 @@ export function _update(
       const toBalance = Storage.has(toBalanceKey)
         ? bytesToU256(Storage.get(toBalanceKey))
         : u256.Zero;
+      const result = toBalance + value;
+      // check if toBalance + value overflow
+      assert(result >= toBalance, ERC1155_BALANCE_OVERFLOW_ERROR);
 
-      Storage.set(toBalanceKey, u256ToBytes(toBalance + value));
+      Storage.set(toBalanceKey, u256ToBytes(result));
     }
   }
 
   if (ids.length == 1) {
     generateEvent(
-      createEvent('TransferSingle', [
+      createEvent(TRANSFER_SINGLE_EVENT, [
         operator,
         from,
         to,
@@ -191,7 +209,7 @@ export function _update(
     );
   } else {
     generateEvent(
-      createEvent('TransferBatch', [
+      createEvent(TRANSFER_BATCH_EVENT, [
         operator,
         from,
         to,
@@ -202,31 +220,66 @@ export function _update(
   }
 }
 
+/**
+ * Update the balances of the sender and receiver
+ * 
+ * It also calls the onERC1155Received or onERC1155BatchReceived function if the receiver is a contract
+ * 
+ * @param from - the address of the sender
+ * @param to - the address of the receiver
+ * @param ids - the ids of the tokens
+ * @param values - the amounts of tokens
+ * @param data - additional data to pass to the receiver
+ */
 export function _updateWithAcceptanceCheck(
   from: string,
   to: string,
   ids: u256[],
   values: u256[],
-  data: StaticArray<u8>
+  data: StaticArray<u8>,
 ): void {
   _update(from, to, ids, values);
-  if (to != "") {
+  if (to != '') {
     const operator = Context.caller().toString();
     const toAddress = new Address(to);
     if (ids.length == 1) {
       const id = ids[0];
       const value = values[0];
-      if (!isAddressEoa(to) && functionExists(toAddress, 'onERC1155Received')) {
-        call(toAddress, 'onERC1155Received', new Args().add(operator).add(from).add(id).add(value).add(data), 0);
+      // use startsWith as a workaround for isAddressEoa which is not mocked in tests
+      if (
+        to.startsWith('AS') &&
+        functionExists(toAddress, 'onERC1155Received')
+      ) {
+        call(
+          toAddress,
+          'onERC1155Received',
+          new Args().add(operator).add(stringToBytes(from)).add(id).add(value).add(data),
+          0,
+        );
       }
     } else {
-      if (!isAddressEoa(to) && functionExists(toAddress, 'onERC1155BatchReceived')) {
-        call(toAddress, 'onERC1155BatchReceived', new Args().add(operator).add(from).add(ids).add(values).add(data), 0);
+      if (
+        to.startsWith('AS') &&
+        functionExists(toAddress, 'onERC1155BatchReceived')
+      ) {
+        call(
+          toAddress,
+          'onERC1155BatchReceived',
+          new Args().add(operator).add(stringToBytes(from)).add(ids).add(values).add(data),
+          0,
+        );
       }
     }
   }
 }
 
+/**
+ * @param from - the address of the sender
+ * @param to - the address of the receiver
+ * @param id - the id of the token
+ * @param value - the amount of tokens
+ * @param data - additional data to pass to the receiver
+ */
 export function _safeTransferFrom(
   from: string,
   to: string,
@@ -234,55 +287,96 @@ export function _safeTransferFrom(
   value: u256,
   data: StaticArray<u8>,
 ): void {
-  assert(to != '', 'ERC1155InvalidReceiver');
-  assert(from != '', 'ERC1155InvalidSender');
+  assert(to != '', ERC1155_INVALID_RECEIVER_ERROR);
+  assert(from != '', ERC1155_INVALID_SENDER_ERROR);
 
   _updateWithAcceptanceCheck(from, to, [id], [value], data);
 }
 
-export function _batchSafeTransferFrom(
+/**
+ * @param from - the address of the sender
+ * @param to - the address of the receiver
+ * @param ids - the ids of the tokens
+ * @param values - the amounts of tokens
+ * @param data - additional data to pass to the receiver
+ */
+export function _safeBatchTransferFrom(
   from: string,
   to: string,
   ids: u256[],
   values: u256[],
   data: StaticArray<u8>,
 ): void {
-  assert(to != '', 'ERC1155InvalidReceiver');
-  assert(from != '', 'ERC1155InvalidSender');
+  assert(to != '', ERC1155_INVALID_RECEIVER_ERROR);
+  assert(from != '', ERC1155_INVALID_SENDER_ERROR);
 
   _updateWithAcceptanceCheck(from, to, ids, values, data);
 }
 
-export function _mint(to: string, id: u256, value: u256, data: StaticArray<u8>): void {
-  assert(to != '', 'ERC1155InvalidReceiver');
+/**
+ * @param to - the account to mint the tokens to
+ * @param id - the id of the token to mint
+ * @param value - the amount of tokens to mint
+ * @param data - additional data to pass to the receiver
+ */
+export function _mint(
+  to: string,
+  id: u256,
+  value: u256,
+  data: StaticArray<u8>,
+): void {
+  assert(to != '', ERC1155_INVALID_RECEIVER_ERROR);
 
   _updateWithAcceptanceCheck('', to, [id], [value], data);
 }
 
-export function _mintBatch(to: string, ids: u256[], values: u256[], data: StaticArray<u8>): void {
-  assert(to != '', 'ERC1155InvalidReceiver');
+/**
+ * @param to - the account to mint the tokens to
+ * @param ids - the ids of the tokens to mint
+ * @param values - the amounts of tokens to mint
+ * @param data - additional data to pass to the receiver
+ */
+export function _mintBatch(
+  to: string,
+  ids: u256[],
+  values: u256[],
+  data: StaticArray<u8>,
+): void {
+  assert(to != '', ERC1155_INVALID_RECEIVER_ERROR);
 
   _updateWithAcceptanceCheck('', to, ids, values, data);
 }
 
-export function _burn(from: string, id: u256, value: u256, data: StaticArray<u8>): void {
-  assert(from != '', 'ERC1155InvalidSender');
+/**
+ * @param account - the account to burn the tokens from
+ * @param id - the id of the token to burn
+ * @param value - the amount of tokens to burn
+ * @param data - additional data to pass to the receiver
+ */
+export function _burn(
+  from: string,
+  id: u256,
+  value: u256,
+  data: StaticArray<u8>,
+): void {
+  assert(from != '', ERC1155_INVALID_SENDER_ERROR);
 
   _updateWithAcceptanceCheck(from, '', [id], [value], data);
 }
 
+/**
+ * @param account - the account to burn the tokens from
+ * @param ids - the ids of the tokens to burn
+ * @param values - the amounts of tokens to burn
+ * @param data - additional data to pass to the receiver
+ */
 export function _burnBatch(
   from: string,
   ids: u256[],
   values: u256[],
-  data: StaticArray<u8>
+  data: StaticArray<u8>,
 ): void {
-  assert(from != '', 'ERC1155InvalidSender');
+  assert(from != '', ERC1155_INVALID_SENDER_ERROR);
 
   _updateWithAcceptanceCheck(from, '', ids, values, data);
 }
-
-/**
- TOD0: Implement the safeTransferFrom function.
- To do so you need to verify that the recipient is a contract and supports the ERC1155Receiver interface.
-*/

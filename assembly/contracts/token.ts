@@ -1,19 +1,22 @@
 /**
- *
- * This is an example of an NFT contract that uses the NFT-internals
- * helper functions to implement the ERC721 standard.
- *
- * This files does basically two things:
- * 1. It wraps the NFT-internals functions, manages the deserialize/serialize of the arguments and return values,
- *    and exposes them to the outside world.
- * 2. It implements some custom features that are not part of the ERC721 standard, like mint, burn or ownership.
- *
- * The NFT-internals functions are not supposed to be re-exported by this file.
+ * 
+ * This file contains the implementation of the ERC1155 token standard.
+ * 
+ * It can be extended with the following extensions:
+ * - mintable
+ * - burnable
+ * - metadata
+ * 
+ * The extensions are implemented in separate files and can be imported as separate modules.
+ * 
+ * The contract is meant to be used as a base contract for a specific Multi-NFT contract.
  */
 
 import {
   Args,
   boolToByte,
+  fixedSizeArrayToBytes,
+  stringToBytes,
   u256ToBytes,
 } from '@massalabs/as-types';
 import {
@@ -24,25 +27,55 @@ import {
   _setApprovalForAll,
   _isApprovedForAll,
   _safeTransferFrom,
-  _batchSafeTransferFrom,
+  _safeBatchTransferFrom,
+  ERC1155_MISSING_APPROVAL_FOR_ALL_ERROR,
+  ERC1155_INVALID_ARRAY_LENGTH_ERROR,
 } from './token-internal';
+import { setOwner } from './utils';
 
 import { Context, isDeployingContract } from '@massalabs/massa-as-sdk';
 
+import { u256 } from 'as-bignum/assembly';
+
+/**
+ * Constructs a new Multi-NFT contract.
+ * 
+ * @param uri - the URI for the NFT contract
+ */
 export function constructor(binaryArgs: StaticArray<u8>): void {
   assert(isDeployingContract());
   const args = new Args(binaryArgs);
   const uri = args.nextString().expect('uri argument is missing or invalid');
+
+  setOwner(new Args().add(Context.caller().toString()).serialize());
   _constructor(uri);
 }
 
-export function uri(binaryArgs: StaticArray<u8>): string {
+/**
+ * 
+ * Get the URI for a token id
+ * 
+ * @param id - the id of the token
+ * 
+ * @returns the URI for the token
+ * 
+ */
+export function uri(binaryArgs: StaticArray<u8>): StaticArray<u8> {
   const args = new Args(binaryArgs);
   const id = args.nextU256().expect('id argument is missing or invalid');
 
-  return _uri(id);
+  return stringToBytes(_uri(id));
 }
 
+/**
+ * 
+ * Get the balance of a specific token for an address
+ * 
+ * @param owner - the address to get the balance for
+ * @param id - the id of the token to get the balance for
+ * 
+ * @returns the balance of the token for the address
+ */
 export function balanceOf(binaryArgs: StaticArray<u8>): StaticArray<u8> {
   const args = new Args(binaryArgs);
   const owner = args
@@ -53,19 +86,38 @@ export function balanceOf(binaryArgs: StaticArray<u8>): StaticArray<u8> {
   return u256ToBytes(_balanceOf(owner, id));
 }
 
+/**
+ * 
+ * Get the balance of multiple tokens for multiples addresses
+ * 
+ * @param owners - the addresses to get the balance for
+ * @param ids - the ids of the tokens to get the balance for
+ * 
+ * @returns the balances of the tokens for the addresses
+ */
 export function balanceOfBatch(binaryArgs: StaticArray<u8>): StaticArray<u8> {
   const args = new Args(binaryArgs);
   const owners = args
     .nextStringArray()
     .expect('owners argument is missing or invalid');
-  const ids = args.nextU256Array().expect('ids argument is missing or invalid');
-  const balances = _balanceOfBatch(owners, ids);
+  const ids = args
+    .nextFixedSizeArray<u256>()
+    .expect('ids argument is missing or invalid');
+  assert(owners.length == ids.length, ERC1155_INVALID_ARRAY_LENGTH_ERROR);
 
-  return balances
-    .map((balance) => u256ToBytes(balance))
-    .reduce<StaticArray<u8>>((acc, balance) => acc.concat(balance), []);
+  const balances = _balanceOfBatch(owners, ids);
+  return fixedSizeArrayToBytes<u256>(balances);
 }
 
+/**
+ * 
+ * Set the approval status of an operator for a specific token
+ * 
+ * Emits an ApprovalForAll event
+ * 
+ * @param operator - the operator to set the approval for
+ * @param approved - the new approval status
+ */
 export function setApprovalForAll(binaryArgs: StaticArray<u8>): void {
   const sender = Context.caller().toString();
   const args = new Args(binaryArgs);
@@ -79,6 +131,15 @@ export function setApprovalForAll(binaryArgs: StaticArray<u8>): void {
   _setApprovalForAll(sender, operator, approved);
 }
 
+/**
+ * 
+ * Check if an operator is approved for all tokens of an owner
+ * 
+ * @param owner - the owner of the tokens
+ * @param operator - the operator to check
+ * 
+ * @returns true if the operator is approved for all tokens of the owner
+ */
 export function isApprovedForAll(binaryArgs: StaticArray<u8>): StaticArray<u8> {
   const args = new Args(binaryArgs);
   const owner = args
@@ -91,6 +152,19 @@ export function isApprovedForAll(binaryArgs: StaticArray<u8>): StaticArray<u8> {
   return boolToByte(_isApprovedForAll(owner, operator));
 }
 
+/**
+ * 
+ * Safe transfer of a specific amount of tokens to an address.
+ * The receiveing address can implement the onERC1155Received interface to be called once a transfer happens.
+ * 
+ * Emits a TransferSingle event.
+ * 
+ * @param from - the account to transfer the tokens from
+ * @param to - the account to transfer the tokens to
+ * @param id - the id of the token to transfer
+ * @param value - the amount of tokens to transfer
+ * @param data - additional data to pass to the receiver
+ */
 export function safeTransferFrom(binaryArgs: StaticArray<u8>): void {
   const sender = Context.caller().toString();
   const args = new Args(binaryArgs);
@@ -99,28 +173,43 @@ export function safeTransferFrom(binaryArgs: StaticArray<u8>): void {
   const id = args.nextU256().expect('id argument is missing or invalid');
   const value = args.nextU256().expect('value argument is missing or invalid');
   const data = args.nextBytes().expect('data argument is missing or invalid');
-  assert(from != sender && _isApprovedForAll(from, sender), 'ERC1155MissingApprovalForAll');
+  assert(
+    from == sender || _isApprovedForAll(from, sender),
+    ERC1155_MISSING_APPROVAL_FOR_ALL_ERROR,
+  );
 
   _safeTransferFrom(from, to, id, value, data);
 }
 
-export function batchSafeTransferFrom(binaryArgs: StaticArray<u8>): void {
+/**
+ * 
+ * Safe transfer of a batch of tokens to an address.
+ * The receiveing address can implement the onERC1155BatchReceived interface to be called once a transfer happens.
+ * 
+ * Emits a TransferBatch event.
+ * 
+ * @param from - the account to transfer the tokens from
+ * @param to - the account to transfer the tokens to
+ * @param ids - the ids of the tokens to transfer
+ * @param values - the amounts of tokens to transfer
+ * @param data - additional data to pass to the receiver
+ */
+export function safeBatchTransferFrom(binaryArgs: StaticArray<u8>): void {
   const sender = Context.caller().toString();
   const args = new Args(binaryArgs);
-  const from = args
-    .nextString()
-    .expect('from argument is missing or invalid');
+  const from = args.nextString().expect('from argument is missing or invalid');
   const to = args.nextString().expect('to argument is missing or invalid');
   const ids = args
-    .nextU256Array()
+    .nextFixedSizeArray<u256>()
     .expect('ids argument is missing or invalid');
   const values = args
-    .nextU256Array()
+    .nextFixedSizeArray<u256>()
     .expect('values argument is missing or invalid');
-    const data = args
-    .nextBytes()
-    .expect('data argument is missing or invalid');
-  assert(from != sender && _isApprovedForAll(from, sender), 'ERC1155MissingApprovalForAll');
+  const data = args.nextBytes().expect('data argument is missing or invalid');
+  assert(
+    from == sender || _isApprovedForAll(from, sender),
+    ERC1155_MISSING_APPROVAL_FOR_ALL_ERROR,
+  );
 
-  _batchSafeTransferFrom(from, to, ids, values, data);
+  _safeBatchTransferFrom(from, to, ids, values, data);
 }
