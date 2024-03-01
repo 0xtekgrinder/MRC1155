@@ -3,9 +3,9 @@
 This repository contains a set of smart contracts to implement the ERC1155 standard on the Massa blockchain.
 
 On top of that it also includes multiples extensions to the standard to allow for more complex use cases:
-- [burnable](./contracts/burnable.sol)
-- [mintable](./contracts/mintable.sol)
-- [metadata](./contracts/metadata.sol)
+- [burnable](./assembly/contracts/burnable.sol)
+- [mintable](./assembly/contracts/mintable.sol)
+- [metadata](./assembly/contracts/metadata.sol)
 
 It can be easily merged into massa-standards as this repository contains a set of smart contracts that are fully compatible with the ERC1155 standard with the only common depencies being ownership contract.
 
