@@ -1,9 +1,9 @@
 /**
- * 
+ *
  * This is an extension to the ERC1155 standard.
- * 
+ *
  * It allows to mint tokens only by the owner
- * 
+ *
  */
 
 import { onlyOwner } from '../utils/ownership';
@@ -13,11 +13,11 @@ import { Args } from '@massalabs/as-types';
 import { u256 } from 'as-bignum/assembly';
 
 /**
- * 
+ *
  * Mint a specific amount of tokens to an account
- * 
+ *
  * Emits a TransferSingle event
- * 
+ *
  * @param to - the account to mint the tokens to
  * @param id - the id of the token to mint
  * @param value - the amount of tokens to mint
@@ -35,11 +35,11 @@ export function mint(binaryArgs: StaticArray<u8>): void {
 }
 
 /**
- * 
+ *
  * Mint a batch of tokens to an account
- * 
+ *
  * Emits a TransferBatch event
- * 
+ *
  * @param to - the account to mint the tokens to
  * @param ids - the ids of the tokens to mint
  * @param values - the amounts of tokens to mint

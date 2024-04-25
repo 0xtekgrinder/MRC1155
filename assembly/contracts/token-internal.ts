@@ -222,9 +222,9 @@ export function _update(
 
 /**
  * Update the balances of the sender and receiver
- * 
+ *
  * It also calls the onERC1155Received or onERC1155BatchReceived function if the receiver is a contract
- * 
+ *
  * @param from - the address of the sender
  * @param to - the address of the receiver
  * @param ids - the ids of the tokens
@@ -253,7 +253,12 @@ export function _updateWithAcceptanceCheck(
         call(
           toAddress,
           'onERC1155Received',
-          new Args().add(operator).add(stringToBytes(from)).add(id).add(value).add(data),
+          new Args()
+            .add(operator)
+            .add(stringToBytes(from))
+            .add(id)
+            .add(value)
+            .add(data),
           0,
         );
       }
@@ -265,7 +270,12 @@ export function _updateWithAcceptanceCheck(
         call(
           toAddress,
           'onERC1155BatchReceived',
-          new Args().add(operator).add(stringToBytes(from)).add(ids).add(values).add(data),
+          new Args()
+            .add(operator)
+            .add(stringToBytes(from))
+            .add(ids)
+            .add(values)
+            .add(data),
           0,
         );
       }

@@ -1,16 +1,14 @@
-import {
-  resetStorage,
-  setDeployContext,
-} from '@massalabs/massa-as-sdk';
-import {
-  Args,
-  stringToBytes,
-} from '@massalabs/as-types';
-import {
-  constructor,
-} from '../contracts/token';
+import { resetStorage, setDeployContext } from '@massalabs/massa-as-sdk';
+import { Args, stringToBytes } from '@massalabs/as-types';
+import { constructor } from '../contracts/token';
 import { u256 } from 'as-bignum/assembly';
-import { _baseURI, _setBaseURI, _setURI, _tokenURI, _uri } from '../contracts/metadata';
+import {
+  _baseURI,
+  _setBaseURI,
+  _setURI,
+  _tokenURI,
+  _uri,
+} from '../contracts/metadata';
 
 const user1Address = 'AU12UBnqTHDQALpocVBnkPNy7y5CndUJQTLutaVDDFgMJcq5kQiKq';
 

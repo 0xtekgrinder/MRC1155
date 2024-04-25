@@ -3,15 +3,8 @@ import {
   resetStorage,
   setDeployContext,
 } from '@massalabs/massa-as-sdk';
-import {
-  Args,
-  stringToBytes,
-  u256ToBytes,
-} from '@massalabs/as-types';
-import {
-  balanceOf,
-  constructor,
-} from '../contracts/token';
+import { Args, stringToBytes, u256ToBytes } from '@massalabs/as-types';
+import { balanceOf, constructor } from '../contracts/token';
 import { u256 } from 'as-bignum/assembly';
 import { _balanceOfBatch } from '../contracts/token-internal';
 import { mint, mintBatch } from '../contracts';
@@ -44,7 +37,14 @@ describe('mint', () => {
     const id = u256.One;
     const value = u256.from(10);
     const data = stringToBytes('mint data');
-    mint(new Args().add(stringToBytes(user1Address)).add(id).add(value).add(data).serialize());
+    mint(
+      new Args()
+        .add(stringToBytes(user1Address))
+        .add(id)
+        .add(value)
+        .add(data)
+        .serialize(),
+    );
     expect(
       balanceOf(
         new Args().add(stringToBytes(user1Address)).add(id).serialize(),
@@ -57,7 +57,14 @@ describe('mint', () => {
     const value = u256.from(10);
     const data = stringToBytes('mint data');
     switchUser(user2Address);
-    mint(new Args().add(stringToBytes(user1Address)).add(id).add(value).add(data).serialize());
+    mint(
+      new Args()
+        .add(stringToBytes(user1Address))
+        .add(id)
+        .add(value)
+        .add(data)
+        .serialize(),
+    );
   });
 });
 
@@ -71,7 +78,9 @@ describe('mintBatch', () => {
     const ids = [u256.One, u256.from(2)];
     const values = [u256.from(10), u256.from(20)];
     const data = stringToBytes('mint data');
-    mintBatch(new Args().add(user1Address).add(ids).add(values).add(data).serialize());
+    mintBatch(
+      new Args().add(user1Address).add(ids).add(values).add(data).serialize(),
+    );
     expect(_balanceOfBatch(owners, ids)).toStrictEqual(values);
   });
 
@@ -80,13 +89,17 @@ describe('mintBatch', () => {
     const values = [u256.from(10), u256.from(20)];
     const data = stringToBytes('mint data');
     switchUser(user2Address);
-    mintBatch(new Args().add(user1Address).add(ids).add(values).add(data).serialize());
+    mintBatch(
+      new Args().add(user1Address).add(ids).add(values).add(data).serialize(),
+    );
   });
 
   throws('ERC1155InvalidArrayLength', () => {
     const ids = [u256.One];
     const values = [u256.from(10), u256.from(20)];
     const data = stringToBytes('mint data');
-    mintBatch(new Args().add(user1Address).add(ids).add(values).add(data).serialize());
+    mintBatch(
+      new Args().add(user1Address).add(ids).add(values).add(data).serialize(),
+    );
   });
 });

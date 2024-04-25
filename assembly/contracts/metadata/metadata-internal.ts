@@ -34,7 +34,9 @@ export function _setBaseURI(newBaseUri: string): void {
  * @returns the base URI
  */
 export function _baseURI(): string {
-  return Storage.has(BASE_URI_KEY) ? bytesToString(Storage.get(BASE_URI_KEY)) : '';
+  return Storage.has(BASE_URI_KEY)
+    ? bytesToString(Storage.get(BASE_URI_KEY))
+    : '';
 }
 
 /**
@@ -43,7 +45,9 @@ export function _baseURI(): string {
  */
 export function _tokenURI(id: u256): string {
   const tokenUriKey = tokenUrisKey(id);
-  const tokenUri = Storage.has(tokenUriKey) ? bytesToString(Storage.get(tokenUriKey)) : '';
+  const tokenUri = Storage.has(tokenUriKey)
+    ? bytesToString(Storage.get(tokenUriKey))
+    : '';
 
   return tokenUri;
 }
@@ -61,10 +65,10 @@ export function _setURI(id: u256, newUri: string): void {
 
 /**
  * Returns the URI for a given token ID.
- * 
+ *
  * It returns the base uri concated to the tokenUri if the tokenUri is not empty
  * And if it is empty it returns the super uri from token-internal
- * 
+ *
  * @param id - The token ID
  * @returns the URI for the given token ID
  */

@@ -1,7 +1,7 @@
 /**
  *
  * This is an extension to the ERC1155 standard.
- * 
+ *
  * It allows to burn tokens in a permissionless way
  */
 
@@ -17,11 +17,11 @@ import { Context } from '@massalabs/massa-as-sdk';
 import { u256 } from 'as-bignum/assembly';
 
 /**
- * 
+ *
  * Burn a specific amount of tokens with the approval mechanism.
- * 
+ *
  * Emits a TransferSingle event.
- * 
+ *
  * @param account - the account to burn the tokens from
  * @param id - the id of the token to burn
  * @param value - the amount of tokens to burn
@@ -45,11 +45,11 @@ export function burn(binaryArgs: StaticArray<u8>): void {
 }
 
 /**
- * 
+ *
  * Burn a batch of tokens with the approval mechanism.
- * 
+ *
  * Emits a TransferBatch event.
- * 
+ *
  * @param account - the account to burn the tokens from
  * @param ids - the ids of the tokens to burn
  * @param values - the amounts of tokens to burn

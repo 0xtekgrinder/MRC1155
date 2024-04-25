@@ -1,14 +1,14 @@
 /**
- * 
+ *
  * This file contains the implementation of the ERC1155 token standard.
- * 
+ *
  * It can be extended with the following extensions:
  * - mintable
  * - burnable
  * - metadata
- * 
+ *
  * The extensions are implemented in separate files and can be imported as separate modules.
- * 
+ *
  * The contract is meant to be used as a base contract for a specific Multi-NFT contract.
  */
 
@@ -39,7 +39,7 @@ import { u256 } from 'as-bignum/assembly';
 
 /**
  * Constructs a new Multi-NFT contract.
- * 
+ *
  * @param uri - the URI for the NFT contract
  */
 export function constructor(binaryArgs: StaticArray<u8>): void {
@@ -52,13 +52,13 @@ export function constructor(binaryArgs: StaticArray<u8>): void {
 }
 
 /**
- * 
+ *
  * Get the URI for a token id
- * 
+ *
  * @param id - the id of the token
- * 
+ *
  * @returns the URI for the token
- * 
+ *
  */
 export function uri(binaryArgs: StaticArray<u8>): StaticArray<u8> {
   const args = new Args(binaryArgs);
@@ -68,12 +68,12 @@ export function uri(binaryArgs: StaticArray<u8>): StaticArray<u8> {
 }
 
 /**
- * 
+ *
  * Get the balance of a specific token for an address
- * 
+ *
  * @param owner - the address to get the balance for
  * @param id - the id of the token to get the balance for
- * 
+ *
  * @returns the balance of the token for the address
  */
 export function balanceOf(binaryArgs: StaticArray<u8>): StaticArray<u8> {
@@ -87,12 +87,12 @@ export function balanceOf(binaryArgs: StaticArray<u8>): StaticArray<u8> {
 }
 
 /**
- * 
+ *
  * Get the balance of multiple tokens for multiples addresses
- * 
+ *
  * @param owners - the addresses to get the balance for
  * @param ids - the ids of the tokens to get the balance for
- * 
+ *
  * @returns the balances of the tokens for the addresses
  */
 export function balanceOfBatch(binaryArgs: StaticArray<u8>): StaticArray<u8> {
@@ -110,11 +110,11 @@ export function balanceOfBatch(binaryArgs: StaticArray<u8>): StaticArray<u8> {
 }
 
 /**
- * 
+ *
  * Set the approval status of an operator for a specific token
- * 
+ *
  * Emits an ApprovalForAll event
- * 
+ *
  * @param operator - the operator to set the approval for
  * @param approved - the new approval status
  */
@@ -132,12 +132,12 @@ export function setApprovalForAll(binaryArgs: StaticArray<u8>): void {
 }
 
 /**
- * 
+ *
  * Check if an operator is approved for all tokens of an owner
- * 
+ *
  * @param owner - the owner of the tokens
  * @param operator - the operator to check
- * 
+ *
  * @returns true if the operator is approved for all tokens of the owner
  */
 export function isApprovedForAll(binaryArgs: StaticArray<u8>): StaticArray<u8> {
@@ -153,12 +153,12 @@ export function isApprovedForAll(binaryArgs: StaticArray<u8>): StaticArray<u8> {
 }
 
 /**
- * 
+ *
  * Safe transfer of a specific amount of tokens to an address.
  * The receiveing address can implement the onERC1155Received interface to be called once a transfer happens.
- * 
+ *
  * Emits a TransferSingle event.
- * 
+ *
  * @param from - the account to transfer the tokens from
  * @param to - the account to transfer the tokens to
  * @param id - the id of the token to transfer
@@ -182,12 +182,12 @@ export function safeTransferFrom(binaryArgs: StaticArray<u8>): void {
 }
 
 /**
- * 
+ *
  * Safe transfer of a batch of tokens to an address.
  * The receiveing address can implement the onERC1155BatchReceived interface to be called once a transfer happens.
- * 
+ *
  * Emits a TransferBatch event.
- * 
+ *
  * @param from - the account to transfer the tokens from
  * @param to - the account to transfer the tokens to
  * @param ids - the ids of the tokens to transfer
