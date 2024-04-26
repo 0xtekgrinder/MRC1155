@@ -7,9 +7,8 @@
  *
  */
 
-import { u256 } from 'as-bignum/assembly';
 import { _uri } from './metadata-internal';
-import { stringToBytes } from '@massalabs/as-types';
+import { Args, stringToBytes } from '@massalabs/as-types';
 
 /**
  *
@@ -20,6 +19,9 @@ import { stringToBytes } from '@massalabs/as-types';
  * @returns the URI for the token
  *
  */
-export function uri(id: u256): StaticArray<u8> {
+export function uri(binaryArgs: StaticArray<u8>): StaticArray<u8> {
+  const args = new Args(binaryArgs);
+  const id = args.nextU256().expect('id argument is missing or invalid');
+
   return stringToBytes(_uri(id));
 }
