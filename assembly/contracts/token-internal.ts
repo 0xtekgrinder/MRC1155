@@ -144,23 +144,19 @@ export function _isApprovedForAll(owner: string, operator: string): bool {
 }
 
 /**
- * Transfers `id` from its current owner to `to`,
- * or alternatively mints if the current owner is the zero address.
+ * Transfers `ids` from `from` to `to`,
+ * or alternatively mints if `from` is the zero address.
  * or alternatively burns if the `to` is the zero address.
  *
+ * @param from - the address to transfer the token from. If the address is the zero address, the token is minted.
  * @param to - the address to transfer the token to. If the address is the zero address, the token is burned.
- * @param id - the token to transfer. If the owner is the zero address, i.e., the token isn't owned,
- * the token gets minted.
- * @param auth - the address of the operator. If the 'auth' is non 0,
- * then this function will check that 'auth' is either the owner of the token,
- * or approved to operate on the token (by the owner). If `auth` is 0, then no check is performed.
- *
- * @remarks This function is a helper function for functions such as `transfer`, `transferFrom`, `mint` or `burn`.
+ * @param ids - the tokens to transfer. Should be an array of same length as `values`.
+ * @param values - the amounts of tokens to transfer. Should be an array of same length as `ids`.
+ * @remarks This function is a helper function for functions such as `_updateWithAcceptanceCheck`.
  * It is not meant to be called directly as it does not check for the caller's permissions.
  * For example if you were to wrap this helper in a `transfer` function,
  * you should check that the caller is the owner of the token, and then call the _update function.
  */
-
 export function _update(
   from: string,
   to: string,
