@@ -8,6 +8,7 @@ import {
   _setURI,
   _tokenURI,
   _uri,
+  uri,
 } from '../contracts/metadata';
 
 const user1Address = 'AU12UBnqTHDQALpocVBnkPNy7y5CndUJQTLutaVDDFgMJcq5kQiKq';
@@ -56,5 +57,29 @@ describe('_uri', () => {
   test('should return super URI', () => {
     const id = u256.One;
     expect(_uri(id)).toStrictEqual(TOKEN_URI);
+  });
+});
+
+describe ('uri', () => {
+  test('should return token URI without base', () => {
+    const id = u256.One;
+    const newUri = 'QmW77ZQQ7Jm9q8WuLbH8YZg2K7T9Qnjbzm7jYVQQrJY5Yd';
+
+    _setURI(id, newUri);
+    expect(uri(new Args().add(id).serialize())).toStrictEqual(stringToBytes(newUri));
+  });
+
+  test('should return token URI with base', () => {
+    const id = u256.One;
+    const newUri = 'QmW77ZQQ7Jm9q8WuLbH8YZg2K7T9Qnjbzm7jYVQQrJY5Yd';
+
+    _setURI(id, newUri);
+    _setBaseURI('ipfs://');
+    expect(uri(new Args().add(id).serialize())).toStrictEqual(stringToBytes('ipfs://' + newUri));
+  });
+
+  test('should return super URI', () => {
+    const id = u256.One;
+    expect(uri(new Args().add(id).serialize())).toStrictEqual(stringToBytes(TOKEN_URI));
   });
 });
