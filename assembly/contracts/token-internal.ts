@@ -357,7 +357,6 @@ export function _mintBatch(
  * @param account - the account to burn the tokens from
  * @param id - the id of the token to burn
  * @param value - the amount of tokens to burn
- * @param data - additional data to pass to the receiver
  */
 export function _burn(
   from: string,
