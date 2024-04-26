@@ -1,6 +1,7 @@
 import {
   Address,
   changeCallStack,
+  generateEvent,
   resetStorage,
   setDeployContext,
 } from '@massalabs/massa-as-sdk';
@@ -125,10 +126,7 @@ describe('balanceOfBatch', () => {
 
   throws('ERC1155InvalidArrayLengths', () => {
     balanceOfBatch(
-      new Args()
-        .add([contractAddr, contractAddr])
-        .add([u256.Zero])
-        .serialize(),
+      new Args().add([contractAddr, contractAddr]).add([u256.Zero]).serialize(),
     );
   });
 });
@@ -554,11 +552,7 @@ describe('_burnBatch', () => {
     _mint(user1Address, burnId2, burnAmount2, []);
 
     switchUser(user1Address);
-    _burnBatch(
-      user1Address,
-      [burnId1, burnId2],
-      [burnAmount1, burnAmount2],
-    );
+    _burnBatch(user1Address, [burnId1, burnId2], [burnAmount1, burnAmount2]);
 
     expect(
       balanceOf(new Args().add(user1Address).add(burnId1).serialize()),

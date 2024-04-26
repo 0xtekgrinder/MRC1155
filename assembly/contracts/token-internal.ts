@@ -360,11 +360,7 @@ export function _mintBatch(
  * @param id - the id of the token to burn
  * @param value - the amount of tokens to burn
  */
-export function _burn(
-  from: string,
-  id: u256,
-  value: u256
-): void {
+export function _burn(from: string, id: u256, value: u256): void {
   assert(from != '', ERC1155_INVALID_SENDER_ERROR);
 
   _updateWithAcceptanceCheck(from, '', [id], [value], []);
@@ -376,11 +372,7 @@ export function _burn(
  * @param values - the amounts of tokens to burn
  * @param data - additional data to pass to the receiver
  */
-export function _burnBatch(
-  from: string,
-  ids: u256[],
-  values: u256[],
-): void {
+export function _burnBatch(from: string, ids: u256[], values: u256[]): void {
   assert(from != '', ERC1155_INVALID_SENDER_ERROR);
 
   _updateWithAcceptanceCheck(from, '', ids, values, []);

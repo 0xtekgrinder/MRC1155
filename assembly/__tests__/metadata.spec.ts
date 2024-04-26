@@ -60,13 +60,15 @@ describe('_uri', () => {
   });
 });
 
-describe ('uri', () => {
+describe('uri', () => {
   test('should return token URI without base', () => {
     const id = u256.One;
     const newUri = 'QmW77ZQQ7Jm9q8WuLbH8YZg2K7T9Qnjbzm7jYVQQrJY5Yd';
 
     _setURI(id, newUri);
-    expect(uri(new Args().add(id).serialize())).toStrictEqual(stringToBytes(newUri));
+    expect(uri(new Args().add(id).serialize())).toStrictEqual(
+      stringToBytes(newUri),
+    );
   });
 
   test('should return token URI with base', () => {
@@ -75,11 +77,15 @@ describe ('uri', () => {
 
     _setURI(id, newUri);
     _setBaseURI('ipfs://');
-    expect(uri(new Args().add(id).serialize())).toStrictEqual(stringToBytes('ipfs://' + newUri));
+    expect(uri(new Args().add(id).serialize())).toStrictEqual(
+      stringToBytes('ipfs://' + newUri),
+    );
   });
 
   test('should return super URI', () => {
     const id = u256.One;
-    expect(uri(new Args().add(id).serialize())).toStrictEqual(stringToBytes(TOKEN_URI));
+    expect(uri(new Args().add(id).serialize())).toStrictEqual(
+      stringToBytes(TOKEN_URI),
+    );
   });
 });

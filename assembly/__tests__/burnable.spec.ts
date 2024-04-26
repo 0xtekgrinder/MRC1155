@@ -138,9 +138,7 @@ describe('burnBatch', () => {
     ).toStrictEqual(fixedSizeArrayToBytes<u256>(values));
 
     switchUser(user1Address);
-    burnBatch(
-      new Args().add(user1Address).add(ids).add(values).serialize(),
-    );
+    burnBatch(new Args().add(user1Address).add(ids).add(values).serialize());
     expect(
       balanceOfBatch(
         new Args()
@@ -176,9 +174,7 @@ describe('burnBatch', () => {
     );
 
     switchUser(user2Address);
-    burnBatch(
-      new Args().add(user1Address).add(ids).add(values).serialize(),
-    );
+    burnBatch(new Args().add(user1Address).add(ids).add(values).serialize());
     expect(
       balanceOfBatch(
         new Args()
@@ -206,8 +202,6 @@ describe('burnBatch', () => {
     ).toStrictEqual(fixedSizeArrayToBytes<u256>(values));
 
     switchUser(user2Address);
-    burnBatch(
-      new Args().add(user1Address).add(ids).add(values).serialize(),
-    );
+    burnBatch(new Args().add(user1Address).add(ids).add(values).serialize());
   });
 });
