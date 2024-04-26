@@ -1,7 +1,7 @@
 import { bytesToString, stringToBytes, u256ToBytes } from '@massalabs/as-types';
-import { Storage } from '@massalabs/massa-as-sdk';
+import { Storage, createEvent, generateEvent } from '@massalabs/massa-as-sdk';
 import { u256 } from 'as-bignum/assembly';
-import { _uri as superUri } from '../token-internal';
+import { URI_EVENT, _uri as superUri } from '../token-internal';
 
 export const BASE_URI_KEY = stringToBytes('BASE_URI');
 export const TOKENS_URI_KEY = stringToBytes('TOKENS_URI');
@@ -61,6 +61,7 @@ export function _setURI(id: u256, newUri: string): void {
   const tokenUriKey = tokenUrisKey(id);
 
   Storage.set(tokenUriKey, stringToBytes(newUri));
+  generateEvent(createEvent(URI_EVENT, [newUri, id.toString()]));
 }
 
 /**

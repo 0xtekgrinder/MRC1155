@@ -28,6 +28,7 @@ export const ALLOWANCE_KEY_PREFIX: StaticArray<u8> = [0x04];
 export const APPROVAL_FOR_ALL_EVENT: string = 'ApprovalForAll';
 export const TRANSFER_SINGLE_EVENT: string = 'TransferSingle';
 export const TRANSFER_BATCH_EVENT: string = 'TransferBatch';
+export const URI_EVENT: string = 'URI';
 
 export const INVALID_OPERATOR_ERROR: string = 'InvalidOperator';
 export const ERC1155_BALANCE_OVERFLOW_ERROR: string = 'ERC1155BalanceOverflow';
@@ -111,6 +112,7 @@ export function _uri(_: u256): string {
  */
 export function _setURI(newUri: string): void {
   Storage.set(URI_KEY, stringToBytes(newUri));
+  generateEvent(createEvent(URI_EVENT, [newUri, newUri]));
 }
 
 /**
