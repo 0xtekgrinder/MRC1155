@@ -535,7 +535,7 @@ describe('_burn', () => {
     _mint(user1Address, burnId, burnAmount, []);
 
     switchUser(user1Address);
-    _burn(user1Address, burnId, burnAmount, []);
+    _burn(user1Address, burnId, burnAmount);
 
     expect(
       balanceOf(new Args().add(user1Address).add(burnId).serialize()),
@@ -558,7 +558,6 @@ describe('_burnBatch', () => {
       user1Address,
       [burnId1, burnId2],
       [burnAmount1, burnAmount2],
-      [],
     );
 
     expect(
@@ -571,6 +570,6 @@ describe('_burnBatch', () => {
   });
 
   throws('ERC1155InvalidArrayLengths', () => {
-    _burnBatch(user1Address, [u256.Zero], [u256.Zero, u256.One], []);
+    _burnBatch(user1Address, [u256.Zero], [u256.Zero, u256.One]);
   });
 });

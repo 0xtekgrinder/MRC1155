@@ -362,12 +362,11 @@ export function _mintBatch(
 export function _burn(
   from: string,
   id: u256,
-  value: u256,
-  data: StaticArray<u8>,
+  value: u256
 ): void {
   assert(from != '', ERC1155_INVALID_SENDER_ERROR);
 
-  _updateWithAcceptanceCheck(from, '', [id], [value], data);
+  _updateWithAcceptanceCheck(from, '', [id], [value], []);
 }
 
 /**
@@ -380,9 +379,8 @@ export function _burnBatch(
   from: string,
   ids: u256[],
   values: u256[],
-  data: StaticArray<u8>,
 ): void {
   assert(from != '', ERC1155_INVALID_SENDER_ERROR);
 
-  _updateWithAcceptanceCheck(from, '', ids, values, data);
+  _updateWithAcceptanceCheck(from, '', ids, values, []);
 }

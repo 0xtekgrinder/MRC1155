@@ -35,13 +35,12 @@ export function burn(binaryArgs: StaticArray<u8>): void {
     .expect('account argument is missing or invalid');
   const id = args.nextU256().expect('id argument is missing or invalid');
   const value = args.nextU256().expect('value argument is missing or invalid');
-  const data = args.nextBytes().expect('data argument is missing or invalid');
   assert(
     account == sender || _isApprovedForAll(account, sender),
     ERC1155_MISSING_APPROVAL_FOR_ALL_ERROR,
   );
 
-  _burn(account, id, value, data);
+  _burn(account, id, value);
 }
 
 /**
@@ -67,11 +66,10 @@ export function burnBatch(binaryArgs: StaticArray<u8>): void {
   const values = args
     .nextFixedSizeArray<u256>()
     .expect('values argument is missing or invalid');
-  const data = args.nextBytes().expect('data argument is missing or invalid');
   assert(
     account == sender || _isApprovedForAll(account, sender),
     ERC1155_MISSING_APPROVAL_FOR_ALL_ERROR,
   );
 
-  _burnBatch(account, ids, values, data);
+  _burnBatch(account, ids, values);
 }

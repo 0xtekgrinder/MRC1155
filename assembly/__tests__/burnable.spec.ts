@@ -57,7 +57,6 @@ describe('burn', () => {
         .add(stringToBytes(user1Address))
         .add(id)
         .add(value)
-        .add(data)
         .serialize(),
     );
     expect(
@@ -92,7 +91,6 @@ describe('burn', () => {
         .add(stringToBytes(user1Address))
         .add(id)
         .add(value)
-        .add(data)
         .serialize(),
     );
     expect(
@@ -119,7 +117,6 @@ describe('burn', () => {
         .add(stringToBytes(user1Address))
         .add(id)
         .add(value)
-        .add(data)
         .serialize(),
     );
   });
@@ -142,7 +139,7 @@ describe('burnBatch', () => {
 
     switchUser(user1Address);
     burnBatch(
-      new Args().add(user1Address).add(ids).add(values).add(data).serialize(),
+      new Args().add(user1Address).add(ids).add(values).serialize(),
     );
     expect(
       balanceOfBatch(
@@ -180,7 +177,7 @@ describe('burnBatch', () => {
 
     switchUser(user2Address);
     burnBatch(
-      new Args().add(user1Address).add(ids).add(values).add(data).serialize(),
+      new Args().add(user1Address).add(ids).add(values).serialize(),
     );
     expect(
       balanceOfBatch(
@@ -210,7 +207,7 @@ describe('burnBatch', () => {
 
     switchUser(user2Address);
     burnBatch(
-      new Args().add(user1Address).add(ids).add(values).add(data).serialize(),
+      new Args().add(user1Address).add(ids).add(values).serialize(),
     );
   });
 });
