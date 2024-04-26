@@ -66,7 +66,7 @@ export function _setURI(id: u256, newUri: string): void {
 /**
  * Returns the URI for a given token ID.
  *
- * It returns the base uri concated to the tokenUri if the tokenUri is not empty
+ * It returns the base uri concatenated to the tokenUri if the tokenUri is not empty
  * And if it is empty it returns the super uri from token-internal
  *
  * @param id - The token ID

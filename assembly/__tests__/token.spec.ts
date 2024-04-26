@@ -44,41 +44,29 @@ function switchUser(user: string): void {
   changeCallStack(user + ' , ' + contractAddr);
 }
 
-function reset(): void {
+beforeEach(() => {
   resetStorage();
   setDeployContext(user1Address);
   constructor(new Args().add(stringToBytes(TOKEN_URI)).serialize());
-}
+});
 
 describe('Initialization', () => {
-  beforeEach(() => {
-    resetStorage();
-    setDeployContext(user1Address);
-    constructor(new Args().add(stringToBytes(TOKEN_URI)).serialize());
-  });
-
   test('uri is properly initialized', () =>
-    expect(uri(fixedSizeArrayToBytes<u256>([u256.Zero]))).toStrictEqual(
+    expect(uri(new Args().add([u256.Zero]).serialize())).toStrictEqual(
       stringToBytes(TOKEN_URI),
     ));
 });
 
 describe('BalanceOf', () => {
-  beforeEach(() => {
-    resetStorage();
-    setDeployContext(user1Address);
-    constructor(new Args().add(stringToBytes(TOKEN_URI)).serialize());
-  });
-
   test('Check an empty balance', () =>
     expect(
       balanceOf(new Args().add(contractAddr).add(u256.Zero).serialize()),
     ).toStrictEqual(u256ToBytes(u256.Zero)));
 
   test('Check a non empty balance', () => {
-    _mint(user1Address, u256.Zero, u256.fromU64(10), new StaticArray<u8>(0));
+    _mint(user1Address, u256.Zero, u256.fromU64(10), []);
 
-    return expect(
+    expect(
       bytesToU256(
         balanceOf(new Args().add(user1Address).add(u256.Zero).serialize()),
       ),
@@ -96,14 +84,8 @@ describe('BalanceOf', () => {
 });
 
 describe('balanceOfBatch', () => {
-  beforeEach(() => {
-    resetStorage();
-    setDeployContext(user1Address);
-    constructor(new Args().add(stringToBytes(TOKEN_URI)).serialize());
-  });
-
   test('Check an empty balances', () => {
-    return expect(
+    expect(
       balanceOfBatch(
         new Args()
           .add([contractAddr, contractAddr])
@@ -114,10 +96,10 @@ describe('balanceOfBatch', () => {
   });
 
   test('Check a non empty balances', () => {
-    _mint(user1Address, u256.Zero, u256.fromU64(10), new StaticArray<u8>(0));
-    _mint(user1Address, u256.One, u256.fromU64(20), new StaticArray<u8>(0));
+    _mint(user1Address, u256.Zero, u256.fromU64(10), []);
+    _mint(user1Address, u256.One, u256.fromU64(20), []);
 
-    return expect(
+    expect(
       balanceOfBatch(
         new Args()
           .add([user1Address, user1Address])
@@ -142,24 +124,16 @@ describe('balanceOfBatch', () => {
   });
 
   throws('ERC1155InvalidArrayLengths', () => {
-    reset();
-
     balanceOfBatch(
       new Args()
         .add([contractAddr, contractAddr])
-        .add(fixedSizeArrayToBytes<u256>([u256.Zero]))
+        .add([u256.Zero])
         .serialize(),
     );
   });
 });
 
 describe('setApprovalForAll', () => {
-  beforeEach(() => {
-    resetStorage();
-    setDeployContext(user1Address);
-    constructor(new Args().add(stringToBytes(TOKEN_URI)).serialize());
-  });
-
   test('Check setApprovalForAll', () => {
     const operator = user2Address;
     const approved = true;
@@ -168,7 +142,7 @@ describe('setApprovalForAll', () => {
 
     setApprovalForAll(new Args().add(user2Address).add(approved).serialize());
 
-    return expect(
+    expect(
       isApprovedForAll(new Args().add(user1Address).add(operator).serialize()),
     ).toStrictEqual(boolToByte(approved));
   });
@@ -183,14 +157,12 @@ describe('setApprovalForAll', () => {
 
     setApprovalForAll(new Args().add(user2Address).add(!approved).serialize());
 
-    return expect(
+    expect(
       isApprovedForAll(new Args().add(user1Address).add(operator).serialize()),
     ).toStrictEqual(boolToByte(!approved));
   });
 
   throws('Invalid operator', () => {
-    reset();
-
     const approved = true;
 
     switchUser(user1Address);
@@ -200,17 +172,11 @@ describe('setApprovalForAll', () => {
 });
 
 describe('safeTransferFrom', () => {
-  beforeEach(() => {
-    resetStorage();
-    setDeployContext(user1Address);
-    constructor(new Args().add(stringToBytes(TOKEN_URI)).serialize());
-  });
-
   test('Transfer from U1 => U2', () => {
     const transferAmount = u256.from(100);
     const transferId = u256.Zero;
 
-    _mint(user1Address, transferId, transferAmount, new StaticArray<u8>(0));
+    _mint(user1Address, transferId, transferAmount, []);
 
     switchUser(user1Address);
     safeTransferFrom(
@@ -219,14 +185,13 @@ describe('safeTransferFrom', () => {
         .add(user2Address)
         .add(transferId)
         .add(transferAmount)
-        .add(new StaticArray<u8>(0))
+        .add([] as StaticArray<u8>)
         .serialize(),
     );
 
     // Check user1 balance
     expect(
       balanceOf(new Args().add(user1Address).add(transferId).serialize()),
-      // @ts-ignore
     ).toStrictEqual(u256ToBytes(u256.Zero));
 
     // Check user2 balance
@@ -239,7 +204,7 @@ describe('safeTransferFrom', () => {
     const transferAmount = u256.from(100);
     const transferId = u256.Zero;
 
-    _mint(user1Address, transferId, transferAmount, new StaticArray<u8>(0));
+    _mint(user1Address, transferId, transferAmount, []);
 
     switchUser(user1Address);
     setApprovalForAll(new Args().add(user2Address).add(true).serialize());
@@ -251,14 +216,13 @@ describe('safeTransferFrom', () => {
         .add(user2Address)
         .add(transferId)
         .add(transferAmount)
-        .add(new StaticArray<u8>(0))
+        .add([] as StaticArray<u8>)
         .serialize(),
     );
 
     // Check user1 balance
     expect(
       balanceOf(new Args().add(user1Address).add(transferId).serialize()),
-      // @ts-ignore
     ).toStrictEqual(u256ToBytes(u256.Zero));
 
     // Check user2 balance
@@ -275,7 +239,7 @@ describe('safeTransferFrom', () => {
         .add(user2Address)
         .add(u256.Zero)
         .add(invalidAmount)
-        .add(new StaticArray<u8>(0))
+        .add([] as StaticArray<u8>)
         .serialize(),
     );
   });
@@ -284,7 +248,7 @@ describe('safeTransferFrom', () => {
     const transferAmount = u256.from(100);
     const transferId = u256.Zero;
 
-    _mint(user1Address, transferId, transferAmount, new StaticArray<u8>(0));
+    _mint(user1Address, transferId, transferAmount, []);
 
     switchUser(user2Address);
     safeTransferFrom(
@@ -293,40 +257,40 @@ describe('safeTransferFrom', () => {
         .add(user2Address)
         .add(transferId)
         .add(transferAmount)
-        .add(new StaticArray<u8>(0))
+        .add([] as StaticArray<u8>)
         .serialize(),
     );
   });
 
   throws('ERC1155InvalidReceiver', () => {
-    _mint(user1Address, u256.Zero, u256.from(100), new StaticArray<u8>(0)),
+    _mint(user1Address, u256.Zero, u256.from(100), []),
     safeTransferFrom(
       new Args()
         .add(user1Address)
         .add('')
         .add(u256.Zero)
         .add(u256.from(100))
-        .add(new StaticArray<u8>(0))
+        .add([] as StaticArray<u8>)
         .serialize(),
     );
   });
 
   throws('ERC1155InvalidSender', () => {
-    _mint(user1Address, u256.Zero, u256.from(100), new StaticArray<u8>(0)),
+    _mint(user1Address, u256.Zero, u256.from(100), []),
     safeTransferFrom(
       new Args()
         .add('')
         .add(user2Address)
         .add(u256.Zero)
         .add(u256.from(100))
-        .add(new StaticArray<u8>(0))
+        .add([] as StaticArray<u8>)
         .serialize(),
     );
   });
 
   throws('ERC1155BalanceOverflow', () => {
-    _mint(user1Address, u256.Zero, u256.Max, new StaticArray<u8>(0));
-    _mint(user2Address, u256.Zero, u256.Max, new StaticArray<u8>(0));
+    _mint(user1Address, u256.Zero, u256.Max, []);
+    _mint(user2Address, u256.Zero, u256.Max, []);
 
     safeTransferFrom(
       new Args()
@@ -334,27 +298,21 @@ describe('safeTransferFrom', () => {
         .add(user2Address)
         .add(u256.Zero)
         .add(u256.Max)
-        .add(new StaticArray<u8>(0))
+        .add([] as StaticArray<u8>)
         .serialize(),
     );
   });
 });
 
 describe('safeBatchTransferFrom', () => {
-  beforeEach(() => {
-    resetStorage();
-    setDeployContext(user1Address);
-    constructor(new Args().add(stringToBytes(TOKEN_URI)).serialize());
-  });
-
   test('Transfers from U1 => U2', () => {
     const transferAmount1 = u256.from(100);
     const transferAmount2 = u256.from(200);
     const transferId1 = u256.Zero;
     const transferId2 = u256.One;
 
-    _mint(user1Address, transferId1, transferAmount1, new StaticArray<u8>(0));
-    _mint(user1Address, transferId2, transferAmount2, new StaticArray<u8>(0));
+    _mint(user1Address, transferId1, transferAmount1, []);
+    _mint(user1Address, transferId2, transferAmount2, []);
 
     switchUser(user1Address);
     safeBatchTransferFrom(
@@ -363,19 +321,17 @@ describe('safeBatchTransferFrom', () => {
         .add(user2Address)
         .add([transferId1, transferId2])
         .add([transferAmount1, transferAmount2])
-        .add(new StaticArray<u8>(0))
+        .add([] as StaticArray<u8>)
         .serialize(),
     );
 
     // Check user1 balance
     expect(
       balanceOf(new Args().add(user1Address).add(transferId1).serialize()),
-      // @ts-ignore
     ).toStrictEqual(u256ToBytes(u256.Zero));
 
     expect(
       balanceOf(new Args().add(user1Address).add(transferId2).serialize()),
-      // @ts-ignore
     ).toStrictEqual(u256ToBytes(u256.Zero));
 
     // Check user2 balance
@@ -394,8 +350,8 @@ describe('safeBatchTransferFrom', () => {
     const transferId1 = u256.Zero;
     const transferId2 = u256.One;
 
-    _mint(user1Address, transferId1, transferAmount1, new StaticArray<u8>(0));
-    _mint(user1Address, transferId2, transferAmount2, new StaticArray<u8>(0));
+    _mint(user1Address, transferId1, transferAmount1, []);
+    _mint(user1Address, transferId2, transferAmount2, []);
 
     switchUser(user1Address);
     setApprovalForAll(new Args().add(user2Address).add(true).serialize());
@@ -407,19 +363,17 @@ describe('safeBatchTransferFrom', () => {
         .add(user2Address)
         .add([transferId1, transferId2])
         .add([transferAmount1, transferAmount2])
-        .add(new StaticArray<u8>(0))
+        .add([] as StaticArray<u8>)
         .serialize(),
     );
 
     // Check user1 balance
     expect(
       balanceOf(new Args().add(user1Address).add(transferId1).serialize()),
-      // @ts-ignore
     ).toStrictEqual(u256ToBytes(u256.Zero));
 
     expect(
       balanceOf(new Args().add(user1Address).add(transferId2).serialize()),
-      // @ts-ignore
     ).toStrictEqual(u256ToBytes(u256.Zero));
 
     // Check user2 balance
@@ -440,7 +394,7 @@ describe('safeBatchTransferFrom', () => {
         .add(user2Address)
         .add([u256.Zero, u256.Zero])
         .add([invalidAmount, invalidAmount])
-        .add(new StaticArray<u8>(0))
+        .add([] as StaticArray<u8>)
         .serialize(),
     );
   });
@@ -451,8 +405,8 @@ describe('safeBatchTransferFrom', () => {
     const transferId1 = u256.Zero;
     const transferId2 = u256.One;
 
-    _mint(user1Address, transferId1, transferAmount1, new StaticArray<u8>(0));
-    _mint(user1Address, transferId2, transferAmount2, new StaticArray<u8>(0));
+    _mint(user1Address, transferId1, transferAmount1, []);
+    _mint(user1Address, transferId2, transferAmount2, []);
 
     switchUser(user2Address);
     safeBatchTransferFrom(
@@ -461,40 +415,40 @@ describe('safeBatchTransferFrom', () => {
         .add(user2Address)
         .add([transferId1, transferId2])
         .add([transferAmount1, transferAmount2])
-        .add(new StaticArray<u8>(0))
+        .add([] as StaticArray<u8>)
         .serialize(),
     );
   });
 
   throws('ERC1155InvalidReceiver', () => {
-    _mint(user1Address, u256.Zero, u256.from(100), new StaticArray<u8>(0)),
+    _mint(user1Address, u256.Zero, u256.from(100), []),
     safeBatchTransferFrom(
       new Args()
         .add(user1Address)
         .add('')
         .add([u256.Zero])
         .add([u256.from(100)])
-        .add(new StaticArray<u8>(0))
+        .add([] as StaticArray<u8>)
         .serialize(),
     );
   });
 
   throws('ERC1155InvalidSender', () => {
-    _mint(user1Address, u256.Zero, u256.from(100), new StaticArray<u8>(0)),
+    _mint(user1Address, u256.Zero, u256.from(100), []),
     safeBatchTransferFrom(
       new Args()
         .add('')
         .add(user2Address)
         .add([u256.Zero])
         .add([u256.from(100)])
-        .add(new StaticArray<u8>(0))
+        .add([] as StaticArray<u8>)
         .serialize(),
     );
   });
 
   throws('ERC1155BalanceOverflow', () => {
-    _mint(user1Address, u256.Zero, u256.Max, new StaticArray<u8>(0));
-    _mint(user2Address, u256.Zero, u256.Max, new StaticArray<u8>(0));
+    _mint(user1Address, u256.Zero, u256.Max, []);
+    _mint(user2Address, u256.Zero, u256.Max, []);
 
     safeBatchTransferFrom(
       new Args()
@@ -502,7 +456,7 @@ describe('safeBatchTransferFrom', () => {
         .add(user2Address)
         .add([u256.Zero])
         .add([u256.Max])
-        .add(new StaticArray<u8>(0))
+        .add([] as StaticArray<u8>)
         .serialize(),
     );
   });
@@ -514,56 +468,38 @@ describe('safeBatchTransferFrom', () => {
         .add(user2Address)
         .add([u256.Zero])
         .add([u256.Zero, u256.One])
-        .add(new StaticArray<u8>(0))
+        .add([] as StaticArray<u8>)
         .serialize(),
     );
   });
 });
 
 describe('_setURI', () => {
-  beforeEach(() => {
-    resetStorage();
-    setDeployContext(user1Address);
-    constructor(new Args().add(stringToBytes(TOKEN_URI)).serialize());
-  });
-
   test('Set URI', () => {
     const newUri = 'ipfs://QmW77ZQQ7Jm9q8WuLbH8YZg2K7YVQQrJY5Yd';
 
     _setURI(newUri);
 
-    return expect(uri(fixedSizeArrayToBytes<u256>([u256.Zero]))).toStrictEqual(
+    expect(uri(new Args().add([u256.Zero]).serialize())).toStrictEqual(
       stringToBytes(newUri),
     );
   });
 });
 
 describe('_mint', () => {
-  beforeEach(() => {
-    resetStorage();
-    setDeployContext(user1Address);
-    constructor(new Args().add(stringToBytes(TOKEN_URI)).serialize());
-  });
-
   test('Mint', () => {
     const mintAmount = u256.from(100);
     const mintId = u256.Zero;
 
-    _mint(user1Address, mintId, mintAmount, new StaticArray<u8>(0));
+    _mint(user1Address, mintId, mintAmount, []);
 
-    return expect(
+    expect(
       balanceOf(new Args().add(user1Address).add(mintId).serialize()),
     ).toStrictEqual(u256ToBytes(mintAmount));
   });
 });
 
 describe('_mintBatch', () => {
-  beforeEach(() => {
-    resetStorage();
-    setDeployContext(user1Address);
-    constructor(new Args().add(stringToBytes(TOKEN_URI)).serialize());
-  });
-
   test('MintBatch', () => {
     const mintAmount1 = u256.from(100);
     const mintAmount2 = u256.from(200);
@@ -574,7 +510,7 @@ describe('_mintBatch', () => {
       user1Address,
       [mintId1, mintId2],
       [mintAmount1, mintAmount2],
-      new StaticArray<u8>(0),
+      [],
     );
 
     expect(
@@ -587,59 +523,42 @@ describe('_mintBatch', () => {
   });
 
   throws('ERC1155InvalidArrayLengths', () => {
-    _mintBatch(
-      user1Address,
-      [u256.Zero],
-      [u256.Zero, u256.One],
-      new StaticArray<u8>(0),
-    );
+    _mintBatch(user1Address, [u256.Zero], [u256.Zero, u256.One], []);
   });
 });
 
 describe('_burn', () => {
-  beforeEach(() => {
-    resetStorage();
-    setDeployContext(user1Address);
-    constructor(new Args().add(stringToBytes(TOKEN_URI)).serialize());
-  });
-
   test('Burn', () => {
     const burnAmount = u256.from(100);
     const burnId = u256.Zero;
 
-    _mint(user1Address, burnId, burnAmount, new StaticArray<u8>(0));
+    _mint(user1Address, burnId, burnAmount, []);
 
     switchUser(user1Address);
-    _burn(user1Address, burnId, burnAmount, new StaticArray<u8>(0));
+    _burn(user1Address, burnId, burnAmount, []);
 
-    return expect(
+    expect(
       balanceOf(new Args().add(user1Address).add(burnId).serialize()),
     ).toStrictEqual(u256ToBytes(u256.Zero));
   });
 });
 
 describe('_burnBatch', () => {
-  beforeEach(() => {
-    resetStorage();
-    setDeployContext(user1Address);
-    constructor(new Args().add(stringToBytes(TOKEN_URI)).serialize());
-  });
-
   test('BurnBatch', () => {
     const burnAmount1 = u256.from(100);
     const burnAmount2 = u256.from(200);
     const burnId1 = u256.Zero;
     const burnId2 = u256.One;
 
-    _mint(user1Address, burnId1, burnAmount1, new StaticArray<u8>(0));
-    _mint(user1Address, burnId2, burnAmount2, new StaticArray<u8>(0));
+    _mint(user1Address, burnId1, burnAmount1, []);
+    _mint(user1Address, burnId2, burnAmount2, []);
 
     switchUser(user1Address);
     _burnBatch(
       user1Address,
       [burnId1, burnId2],
       [burnAmount1, burnAmount2],
-      new StaticArray<u8>(0),
+      [],
     );
 
     expect(
@@ -652,11 +571,6 @@ describe('_burnBatch', () => {
   });
 
   throws('ERC1155InvalidArrayLengths', () => {
-    _burnBatch(
-      user1Address,
-      [u256.Zero],
-      [u256.Zero, u256.One],
-      new StaticArray<u8>(0),
-    );
+    _burnBatch(user1Address, [u256.Zero], [u256.Zero, u256.One], []);
   });
 });

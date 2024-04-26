@@ -14,17 +14,13 @@ const user1Address = 'AU12UBnqTHDQALpocVBnkPNy7y5CndUJQTLutaVDDFgMJcq5kQiKq';
 
 const TOKEN_URI = 'ipfs://QmW77ZQQ7Jm9q8WuLbH8YZg2K7T9Qnjbzm7jYVQQrJY5Yd';
 
-function reset(): void {
+beforeEach(() => {
   resetStorage();
   setDeployContext(user1Address);
   constructor(new Args().add(stringToBytes(TOKEN_URI)).serialize());
-}
+});
 
 describe('_setBaseURI', () => {
-  beforeEach(() => {
-    reset();
-  });
-
   test('should set base URI', () => {
     const newBaseUri = 'ipfs://QmW77ZQQ7Jm9q8WuLbH8YZg2K7T9Qnjbzm7jYVQQrJY5Yd';
     _setBaseURI(newBaseUri);
@@ -33,10 +29,6 @@ describe('_setBaseURI', () => {
 });
 
 describe('_setURI', () => {
-  beforeEach(() => {
-    reset();
-  });
-
   test('should set URI', () => {
     const id = u256.One;
     const newUri = 'QmW77ZQQ7Jm9q8WuLbH8YZg2K7T9Qnjbzm7jYVQQrJY5Yd';
@@ -46,10 +38,6 @@ describe('_setURI', () => {
 });
 
 describe('_uri', () => {
-  beforeEach(() => {
-    reset();
-  });
-
   test('should return token URI without base', () => {
     const id = u256.One;
     const newUri = 'QmW77ZQQ7Jm9q8WuLbH8YZg2K7T9Qnjbzm7jYVQQrJY5Yd';

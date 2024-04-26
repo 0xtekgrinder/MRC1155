@@ -155,7 +155,7 @@ export function isApprovedForAll(binaryArgs: StaticArray<u8>): StaticArray<u8> {
 /**
  *
  * Safe transfer of a specific amount of tokens to an address.
- * The receiveing address can implement the onERC1155Received interface to be called once a transfer happens.
+ * The receiving address can implement the onERC1155Received interface to be called once a transfer happens.
  *
  * Emits a TransferSingle event.
  *
@@ -184,7 +184,7 @@ export function safeTransferFrom(binaryArgs: StaticArray<u8>): void {
 /**
  *
  * Safe transfer of a batch of tokens to an address.
- * The receiveing address can implement the onERC1155BatchReceived interface to be called once a transfer happens.
+ * The receiving address can implement the onERC1155BatchReceived interface to be called once a transfer happens.
  *
  * Emits a TransferBatch event.
  *

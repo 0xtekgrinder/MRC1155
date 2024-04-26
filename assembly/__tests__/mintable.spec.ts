@@ -22,17 +22,13 @@ function switchUser(user: string): void {
   changeCallStack(user + ' , ' + contractAddr);
 }
 
-function reset(): void {
+beforeEach(() => {
   resetStorage();
   setDeployContext(user1Address);
   constructor(new Args().add(stringToBytes(TOKEN_URI)).serialize());
-}
+});
 
 describe('mint', () => {
-  beforeEach(() => {
-    reset();
-  });
-
   test('should mint tokens', () => {
     const id = u256.One;
     const value = u256.from(10);
@@ -69,10 +65,6 @@ describe('mint', () => {
 });
 
 describe('mintBatch', () => {
-  beforeEach(() => {
-    reset();
-  });
-
   test('should mint tokens', () => {
     const owners = [user1Address, user1Address];
     const ids = [u256.One, u256.from(2)];

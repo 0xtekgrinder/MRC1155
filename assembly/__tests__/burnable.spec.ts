@@ -33,17 +33,13 @@ function switchUser(user: string): void {
   changeCallStack(user + ' , ' + contractAddr);
 }
 
-function reset(): void {
+beforeEach(() => {
   resetStorage();
   setDeployContext(user1Address);
   constructor(new Args().add(stringToBytes(TOKEN_URI)).serialize());
-}
+});
 
 describe('burn', () => {
-  beforeEach(() => {
-    reset();
-  });
-
   test('should burn tokens', () => {
     const id = u256.One;
     const value = u256.from(10);
@@ -130,10 +126,6 @@ describe('burn', () => {
 });
 
 describe('burnBatch', () => {
-  beforeEach(() => {
-    reset();
-  });
-
   test('should burn batch of tokens', () => {
     const ids = [u256.One, u256.from(2), u256.from(3)];
     const values = [u256.from(10), u256.from(20), u256.from(30)];
