@@ -1,7 +1,6 @@
 import {
   Address,
   changeCallStack,
-  generateEvent,
   resetStorage,
   setDeployContext,
 } from '@massalabs/massa-as-sdk';
