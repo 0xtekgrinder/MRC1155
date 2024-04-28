@@ -7,7 +7,8 @@ import { Args, stringToBytes, u256ToBytes } from '@massalabs/as-types';
 import { balanceOf, constructor } from '../contracts/token';
 import { u256 } from 'as-bignum/assembly';
 import { _balanceOfBatch } from '../contracts/token-internal';
-import { mint, mintBatch } from '../contracts';
+import { MINTER_ROLE, mint, mintBatch } from '../contracts';
+import { grantRole } from '../contracts/utils/accessControl';
 
 // address of the contract set in vm-mock. must match with contractAddr of @massalabs/massa-as-sdk/vm-mock/vm.js
 const contractAddr = 'AS12BqZEQ6sByhRLyEuf0YbQmcF2PsDdkNNG1akBJu9XcjZA1eT';
@@ -33,6 +34,7 @@ describe('mint', () => {
     const id = u256.One;
     const value = u256.from(10);
     const data = stringToBytes('mint data');
+    grantRole(new Args().add(MINTER_ROLE).add(user1Address).serialize());
     mint(
       new Args()
         .add(stringToBytes(user1Address))
@@ -48,7 +50,7 @@ describe('mint', () => {
     ).toStrictEqual(u256ToBytes(value));
   });
 
-  throws('NotOwner', () => {
+  throws('Caller does not have minter role', () => {
     const id = u256.One;
     const value = u256.from(10);
     const data = stringToBytes('mint data');
@@ -70,13 +72,14 @@ describe('mintBatch', () => {
     const ids = [u256.One, u256.from(2)];
     const values = [u256.from(10), u256.from(20)];
     const data = stringToBytes('mint data');
+    grantRole(new Args().add(MINTER_ROLE).add(user1Address).serialize());
     mintBatch(
       new Args().add(user1Address).add(ids).add(values).add(data).serialize(),
     );
     expect(_balanceOfBatch(owners, ids)).toStrictEqual(values);
   });
 
-  throws('NotOwner', () => {
+  throws('Caller does not have minter role', () => {
     const ids = [u256.One, u256.from(2)];
     const values = [u256.from(10), u256.from(20)];
     const data = stringToBytes('mint data');
@@ -90,6 +93,7 @@ describe('mintBatch', () => {
     const ids = [u256.One];
     const values = [u256.from(10), u256.from(20)];
     const data = stringToBytes('mint data');
+    grantRole(new Args().add(MINTER_ROLE).add(user1Address).serialize());
     mintBatch(
       new Args().add(user1Address).add(ids).add(values).add(data).serialize(),
     );

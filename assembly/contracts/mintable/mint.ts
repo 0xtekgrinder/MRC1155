@@ -2,15 +2,17 @@
  *
  * This is an extension to the ERC1155 standard.
  *
- * It allows to mint tokens only by the owner
+ * It allows to mint tokens only by the minter role
  *
  */
 
-import { onlyOwner } from '../utils/ownership';
 import { _mint, _mintBatch } from '../token-internal';
 import { Args } from '@massalabs/as-types';
 
 import { u256 } from 'as-bignum/assembly';
+import { onlyRole } from '../utils/accessControl';
+
+export const MINTER_ROLE = 'minter';
 
 /**
  *
@@ -24,7 +26,7 @@ import { u256 } from 'as-bignum/assembly';
  * @param data - additional data to pass to the receiver
  */
 export function mint(binaryArgs: StaticArray<u8>): void {
-  onlyOwner();
+  onlyRole(new Args().add(MINTER_ROLE).serialize());
   const args = new Args(binaryArgs);
   const to = args.nextString().expect('to argument is missing or invalid');
   const id = args.nextU256().expect('id argument is missing or invalid');
@@ -46,7 +48,7 @@ export function mint(binaryArgs: StaticArray<u8>): void {
  * @param data - additional data to pass to the receiver
  */
 export function mintBatch(binaryArgs: StaticArray<u8>): void {
-  onlyOwner();
+  onlyRole(new Args().add(MINTER_ROLE).serialize());
   const args = new Args(binaryArgs);
   const to = args.nextString().expect('to argument is missing or invalid');
   const ids = args
