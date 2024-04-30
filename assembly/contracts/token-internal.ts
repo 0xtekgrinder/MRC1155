@@ -253,7 +253,7 @@ export function _updateWithAcceptanceCheck(
           'onERC1155Received',
           new Args()
             .add(operator)
-            .add(stringToBytes(from))
+            .add(from)
             .add(id)
             .add(value)
             .add(data),
@@ -270,7 +270,7 @@ export function _updateWithAcceptanceCheck(
           'onERC1155BatchReceived',
           new Args()
             .add(operator)
-            .add(stringToBytes(from))
+            .add(from)
             .add(ids)
             .add(values)
             .add(data),
