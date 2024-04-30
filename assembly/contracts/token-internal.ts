@@ -16,6 +16,7 @@ import {
   call,
   Address,
 } from '@massalabs/massa-as-sdk';
+import { Bytes4 } from '@massalabs/massa-as-sdk/assembly/std/solidity_compat';
 
 import { u256 } from 'as-bignum/assembly';
 
@@ -248,7 +249,7 @@ export function _updateWithAcceptanceCheck(
         to.startsWith('AS') &&
         functionExists(toAddress, 'onERC1155Received')
       ) {
-        call(
+        const output = call(
           toAddress,
           'onERC1155Received',
           new Args()
@@ -259,13 +260,15 @@ export function _updateWithAcceptanceCheck(
             .add(data),
           0,
         );
+        // Check if the returned value is bytes4(keccak256("onERC1155Received(address,address,uint256,uint256,bytes)"))
+        assert(output == new Bytes4().add("0xf23a6e61").serialize());
       }
     } else {
       if (
         to.startsWith('AS') &&
         functionExists(toAddress, 'onERC1155BatchReceived')
       ) {
-        call(
+        const output = call(
           toAddress,
           'onERC1155BatchReceived',
           new Args()
@@ -276,6 +279,8 @@ export function _updateWithAcceptanceCheck(
             .add(data),
           0,
         );
+        // Check if the returned value is bytes4(keccak256("onERC1155Received(address,address,uint256,uint256,bytes)"))
+        assert(output == new Bytes4().add("0xf23a6e61").serialize());
       }
     }
   }
