@@ -26,6 +26,7 @@ dotenv.config();
 
 // Get environment variables
 const secretKey = getEnvVariable('WALLET_SECRET_KEY');
+
 // Define deployment parameters
 const chainId = CHAIN_ID.BuildNet; // Choose the chain ID corresponding to the network you want to deploy to
 const maxGas = MAX_GAS_DEPLOYMENT; // Gas for deployment Default is the maximum gas allowed for deployment
@@ -41,7 +42,7 @@ let onERC1155ReceivedFail: string;
 let testnetClient: Client;
 
 async function onERC1155BatchReceivedTestNormal() {
-  if (!deployerAccount.address) throw new Error('Invalid deployer account');
+  if (!deployerAccount?.address) throw new Error('Invalid deployer account');
   console.log('should transfer tokens and call onERC1155Received');
   const data = 'transfer data';
   const from = deployerAccount.address;
@@ -78,7 +79,7 @@ async function onERC1155BatchReceivedTestNormal() {
 }
 
 async function onERC1155BatchReceivedTestFail() {
-  if (!deployerAccount.address) throw new Error('Invalid deployer account');
+  if (!deployerAccount?.address) throw new Error('Invalid deployer account');
   console.log('should reverts if wrong return value');
   const data = 'transfer data';
   const from = deployerAccount.address;
@@ -103,7 +104,7 @@ async function onERC1155BatchReceivedTestFail() {
 }
 
 async function onERC1155ReceivedTestNormal() {
-  if (!deployerAccount.address) throw new Error('Invalid deployer account');
+  if (!deployerAccount?.address) throw new Error('Invalid deployer account');
   console.log('should transfer tokens and call onERC1155Received');
   const data = 'transfer data';
   const from = deployerAccount.address;
@@ -139,7 +140,7 @@ async function onERC1155ReceivedTestNormal() {
 }
 
 async function onERC1155ReceivedTestFail() {
-  if (!deployerAccount.address) throw new Error('Invalid deployer account');
+  if (!deployerAccount?.address) throw new Error('Invalid deployer account');
   console.log('should reverts if wrong return value');
   const data = 'transfer data';
   const from = deployerAccount.address;
@@ -171,13 +172,12 @@ async function beforeAll() {
     deployerAccount, // account deploying the smart contract(s)
     [
         {
-          data: readFileSync(path.join(__dirname, '..', 'build', 'NFT-exemple.wasm')), // smart contract bytecode
+          data: readFileSync(path.join(__dirname, 'build', 'NFT-exemple.wasm')), // smart contract bytecode
           coins: fromMAS(0.1), // coins for deployment
           args: new Args().addString(
             'ipfs://QmW77ZQQ7Jm9q8WuLbH8YZg2K7T9Qnjbzm7jYVQQrJY5Yd',
           ).addArray([100n, 111n], ArrayTypes.U256).addArray([100n, 100n], ArrayTypes.U256), // arguments for deployment
         } as ISCData,
-      // Additional smart contracts can be added here for deployment
     ],
     chainId,
     fees,
@@ -189,11 +189,10 @@ async function beforeAll() {
     deployerAccount, // account deploying the smart contract(s)
     [
         {
-          data: readFileSync(path.join(__dirname, '..', 'build', 'OnERC1155Received.wasm')), // smart contract bytecode
+          data: readFileSync(path.join(__dirname, 'build', 'OnERC1155Received.wasm')), // smart contract bytecode
           coins: fromMAS(0.1), // coins for deployment
           args: new Args(), // arguments for deployment
         } as ISCData,
-      // Additional smart contracts can be added here for deployment
     ],
     chainId,
     fees,
@@ -205,11 +204,10 @@ async function beforeAll() {
     deployerAccount, // account deploying the smart contract(s)
     [
         {
-          data: readFileSync(path.join(__dirname, '..', 'build', 'OnERC1155ReceivedFail.wasm')), // smart contract bytecode
+          data: readFileSync(path.join(__dirname, 'build', 'OnERC1155ReceivedFail.wasm')), // smart contract bytecode
           coins: fromMAS(0.1), // coins for deployment
           args: new Args(), // arguments for deployment
         } as ISCData,
-      // Additional smart contracts can be added here for deployment
     ],
     chainId,
     fees,
@@ -231,7 +229,7 @@ async function beforeAll() {
 }
 
 (async () => {
-  beforeAll();
+  await beforeAll();
 
   console.log('onERC1155Received');
   await onERC1155ReceivedTestNormal();

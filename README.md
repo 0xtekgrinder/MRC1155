@@ -47,6 +47,16 @@ The only missing coverage is for the call of the ERC1155Receiver function which 
 npm run test
 ```
 
+## Integration tests
+
+A set of integration tests has been written to ensure the correctness of the hooks. These can be found in [tests/integration](./tests/integration.spec.ts).
+
+You need to setup `WALLET_SECRET_KEY` in your `.env` file to run the integration tests.
+
+```shell
+npm run test:integration
+```
+
 ## Format code
 
 ```shell
