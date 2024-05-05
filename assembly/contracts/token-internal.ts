@@ -16,7 +16,6 @@ import {
   call,
   Address,
 } from '@massalabs/massa-as-sdk';
-import { Bytes4 } from '@massalabs/massa-as-sdk/assembly/std/solidity_compat';
 
 import { u256 } from 'as-bignum/assembly';
 
@@ -252,16 +251,14 @@ export function _updateWithAcceptanceCheck(
         const output = call(
           toAddress,
           'onERC1155Received',
-          new Args()
-            .add(operator)
-            .add(from)
-            .add(id)
-            .add(value)
-            .add(data),
+          new Args().add(operator).add(from).add(id).add(value).add(data),
           0,
         );
         // Check if the returned value is bytes4(keccak256("onERC1155Received(address,address,uint256,uint256,bytes)"))
-        assert(output == new Bytes4().add("0xf23a6e61").serialize());
+        assert(
+          output.toString() ==
+            new Args().add('f23a6e61').serialize().toString(),
+        );
       }
     } else {
       if (
@@ -271,16 +268,15 @@ export function _updateWithAcceptanceCheck(
         const output = call(
           toAddress,
           'onERC1155BatchReceived',
-          new Args()
-            .add(operator)
-            .add(from)
-            .add(ids)
-            .add(values)
-            .add(data),
+          new Args().add(operator).add(from).add(ids).add(values).add(data),
           0,
         );
-        // Check if the returned value is bytes4(keccak256("onERC1155Received(address,address,uint256,uint256,bytes)"))
-        assert(output == new Bytes4().add("0xf23a6e61").serialize());
+        // Check if the returned value is
+        // bytes4(keccak256("onERC1155BatchReceived(address,address,uint256[],uint256[],bytes)"))
+        assert(
+          output.toString() ==
+            new Args().add('bc197c81').serialize().toString(),
+        );
       }
     }
   }
