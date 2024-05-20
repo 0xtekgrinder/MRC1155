@@ -31,7 +31,7 @@ import {
   ERC1155_MISSING_APPROVAL_FOR_ALL_ERROR,
   ERC1155_INVALID_ARRAY_LENGTH_ERROR,
 } from './token-internal';
-import { setOwner } from './utils';
+import { setOwner } from '@massalabs/sc-standards/assembly/contracts/utils/ownership';
 
 import { Context, isDeployingContract } from '@massalabs/massa-as-sdk';
 

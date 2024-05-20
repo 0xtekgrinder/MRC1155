@@ -13,9 +13,11 @@ import {
   Client,
   ClientFactory,
   EOperationStatus,
-  ArrayTypes
+  ArrayTypes,
 } from '@massalabs/massa-web3';
 import { fileURLToPath } from 'url';
+
+/* eslint-disable no-console */
 
 // Obtain the current file name and directory paths
 const __filename = fileURLToPath(import.meta.url);
@@ -63,17 +65,29 @@ async function onERC1155BatchReceivedTestNormal() {
     coins: fromMAS(0.5),
     fee: 100000000n,
   });
-  await testnetClient.smartContracts().awaitRequiredOperationStatus(operationId, EOperationStatus.FINAL_SUCCESS);
-  const events = await testnetClient.smartContracts().getFilteredScOutputEvents({
-    emitter_address: null,
-    start: null,
-    end: null,
-    original_caller_address: null,
-    original_operation_id: operationId,
-    is_final: null,
-  });
-  console.log(events[events.length - 1].data, `ERC1155BatchReceived:${from},${from},${ids.join(';')},${values.join(';')},${data.split('').map((c) => c.charCodeAt(0)).join(',')}`);
-  if (events[events.length - 1].data !== `ERC1155BatchReceived:${from},${from},${ids.join(';')},${values.join(';')},${data.split('').map((c) => c.charCodeAt(0)).join(',')}`) {
+  await testnetClient
+    .smartContracts()
+    .awaitRequiredOperationStatus(operationId, EOperationStatus.FINAL_SUCCESS);
+  const events = await testnetClient
+    .smartContracts()
+    .getFilteredScOutputEvents({
+      emitter_address: null,
+      start: null,
+      end: null,
+      original_caller_address: null,
+      original_operation_id: operationId,
+      is_final: null,
+    });
+  const dataString = data
+    .split('')
+    .map((c) => c.charCodeAt(0))
+    .join(',');
+  if (
+    events[events.length - 1].data !==
+    `ERC1155BatchReceived:${from},${from},${ids.join(';')},${values.join(
+      ';',
+    )},${dataString}`
+  ) {
     throw new Error('Invalid event data');
   }
 }
@@ -100,7 +114,9 @@ async function onERC1155BatchReceivedTestFail() {
     coins: fromMAS(0.5),
     fee: 100000000n,
   });
-  await testnetClient.smartContracts().awaitRequiredOperationStatus(operationId, EOperationStatus.FINAL_ERROR);
+  await testnetClient
+    .smartContracts()
+    .awaitRequiredOperationStatus(operationId, EOperationStatus.FINAL_ERROR);
 }
 
 async function onERC1155ReceivedTestNormal() {
@@ -125,16 +141,27 @@ async function onERC1155ReceivedTestNormal() {
     coins: fromMAS(0.5),
     fee: 100000000n,
   });
-  await testnetClient.smartContracts().awaitRequiredOperationStatus(operationId, EOperationStatus.FINAL_SUCCESS);
-  const events = await testnetClient.smartContracts().getFilteredScOutputEvents({
-    emitter_address: null,
-    start: null,
-    end: null,
-    original_caller_address: null,
-    original_operation_id: operationId,
-    is_final: null,
-  });
-  if (events[events.length - 1].data !== `ERC1155Received:${from},${from},${id},${value},${data.split('').map((c) => c.charCodeAt(0)).join(',')}`) {
+  await testnetClient
+    .smartContracts()
+    .awaitRequiredOperationStatus(operationId, EOperationStatus.FINAL_SUCCESS);
+  const events = await testnetClient
+    .smartContracts()
+    .getFilteredScOutputEvents({
+      emitter_address: null,
+      start: null,
+      end: null,
+      original_caller_address: null,
+      original_operation_id: operationId,
+      is_final: null,
+    });
+  const dataString = data
+    .split('')
+    .map((c) => c.charCodeAt(0))
+    .join(',');
+  if (
+    events[events.length - 1].data !==
+    `ERC1155Received:${from},${from},${id},${value},${dataString}`
+  ) {
     throw new Error('Invalid event data');
   }
 }
@@ -161,7 +188,9 @@ async function onERC1155ReceivedTestFail() {
     coins: fromMAS(0.5),
     fee: 100000000n,
   });
-  await testnetClient.smartContracts().awaitRequiredOperationStatus(operationId, EOperationStatus.FINAL_ERROR);
+  await testnetClient
+    .smartContracts()
+    .awaitRequiredOperationStatus(operationId, EOperationStatus.FINAL_ERROR);
 }
 
 async function beforeAll() {
@@ -171,13 +200,14 @@ async function beforeAll() {
     DefaultProviderUrls.BUILDNET, // JSON RPC URL
     deployerAccount, // account deploying the smart contract(s)
     [
-        {
-          data: readFileSync(path.join(__dirname, 'build', 'NFT-exemple.wasm')), // smart contract bytecode
-          coins: fromMAS(0.1), // coins for deployment
-          args: new Args().addString(
-            'ipfs://QmW77ZQQ7Jm9q8WuLbH8YZg2K7T9Qnjbzm7jYVQQrJY5Yd',
-          ).addArray([100n, 111n], ArrayTypes.U256).addArray([100n, 100n], ArrayTypes.U256), // arguments for deployment
-        } as ISCData,
+      {
+        data: readFileSync(path.join(__dirname, 'build', 'NFT-exemple.wasm')), // smart contract bytecode
+        coins: fromMAS(0.1), // coins for deployment
+        args: new Args()
+          .addString('ipfs://QmW77ZQQ7Jm9q8WuLbH8YZg2K7T9Qnjbzm7jYVQQrJY5Yd')
+          .addArray([100n, 111n], ArrayTypes.U256)
+          .addArray([100n, 100n], ArrayTypes.U256), // arguments for deployment
+      } as ISCData,
     ],
     chainId,
     fees,
@@ -188,11 +218,13 @@ async function beforeAll() {
     DefaultProviderUrls.BUILDNET, // JSON RPC URL
     deployerAccount, // account deploying the smart contract(s)
     [
-        {
-          data: readFileSync(path.join(__dirname, 'build', 'OnERC1155Received.wasm')), // smart contract bytecode
-          coins: fromMAS(0.1), // coins for deployment
-          args: new Args(), // arguments for deployment
-        } as ISCData,
+      {
+        data: readFileSync(
+          path.join(__dirname, 'build', 'OnERC1155Received.wasm'),
+        ), // smart contract bytecode
+        coins: fromMAS(0.1), // coins for deployment
+        args: new Args(), // arguments for deployment
+      } as ISCData,
     ],
     chainId,
     fees,
@@ -203,23 +235,27 @@ async function beforeAll() {
     DefaultProviderUrls.BUILDNET, // JSON RPC URL
     deployerAccount, // account deploying the smart contract(s)
     [
-        {
-          data: readFileSync(path.join(__dirname, 'build', 'OnERC1155ReceivedFail.wasm')), // smart contract bytecode
-          coins: fromMAS(0.1), // coins for deployment
-          args: new Args(), // arguments for deployment
-        } as ISCData,
+      {
+        data: readFileSync(
+          path.join(__dirname, 'build', 'OnERC1155ReceivedFail.wasm'),
+        ), // smart contract bytecode
+        coins: fromMAS(0.1), // coins for deployment
+        args: new Args(), // arguments for deployment
+      } as ISCData,
     ],
     chainId,
     fees,
     maxGas,
     waitFirstEvent,
   );
-  if (!res2.events || !res1.events || !res3.events) throw new Error('Invalid events');
-  
+  if (!res2.events || !res1.events || !res3.events)
+    throw new Error('Invalid events');
+
   nft = res1?.events[res1?.events.length - 1].data.split(': ')[1];
   onERC1155Received = res2?.events[res2?.events.length - 1].data.split(': ')[1];
-  onERC1155ReceivedFail = res3?.events[res3?.events.length - 1].data.split(': ')[1];
-  
+  onERC1155ReceivedFail =
+    res3?.events[res3?.events.length - 1].data.split(': ')[1];
+
   testnetClient = await ClientFactory.createDefaultClient(
     DefaultProviderUrls.BUILDNET,
     chainId,

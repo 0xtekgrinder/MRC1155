@@ -10,7 +10,7 @@ import { _mint, _mintBatch } from '../token-internal';
 import { Args } from '@massalabs/as-types';
 
 import { u256 } from 'as-bignum/assembly';
-import { onlyRole } from '../utils/accessControl';
+import { onlyRole } from '@massalabs/sc-standards/assembly/contracts/utils/accessControl';
 
 export const MINTER_ROLE = 'minter';
 

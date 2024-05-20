@@ -8,7 +8,7 @@ import { balanceOf, constructor } from '../contracts/token';
 import { u256 } from 'as-bignum/assembly';
 import { _balanceOfBatch } from '../contracts/token-internal';
 import { MINTER_ROLE, mint, mintBatch } from '../contracts';
-import { grantRole } from '../contracts/utils/accessControl';
+import { grantRole } from '@massalabs/sc-standards/assembly/contracts/utils/accessControl';
 
 // address of the contract set in vm-mock. must match with contractAddr of @massalabs/massa-as-sdk/vm-mock/vm.js
 const contractAddr = 'AS12BqZEQ6sByhRLyEuf0YbQmcF2PsDdkNNG1akBJu9XcjZA1eT';
