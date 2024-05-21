@@ -99,7 +99,7 @@ export function _balanceOfBatch(owners: string[], ids: u256[]): u256[] {
 }
 
 /**
- * @param id - the id of the token
+ * @param id - the id of the token - it is not used in this implementation but mandatory for the ERC1155 standard
  * @returns the URI for the token
  */
 export function _uri(_: u256): string {
