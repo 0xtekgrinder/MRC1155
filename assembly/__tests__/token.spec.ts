@@ -261,28 +261,28 @@ describe('safeTransferFrom', () => {
 
   throws('ERC1155InvalidReceiver', () => {
     _mint(user1Address, u256.Zero, u256.from(100), []),
-      safeTransferFrom(
-        new Args()
-          .add(user1Address)
-          .add('')
-          .add(u256.Zero)
-          .add(u256.from(100))
-          .add([] as StaticArray<u8>)
-          .serialize(),
-      );
+    safeTransferFrom(
+      new Args()
+        .add(user1Address)
+        .add('')
+        .add(u256.Zero)
+        .add(u256.from(100))
+        .add([] as StaticArray<u8>)
+        .serialize(),
+    );
   });
 
   throws('ERC1155InvalidSender', () => {
     _mint(user1Address, u256.Zero, u256.from(100), []),
-      safeTransferFrom(
-        new Args()
-          .add('')
-          .add(user2Address)
-          .add(u256.Zero)
-          .add(u256.from(100))
-          .add([] as StaticArray<u8>)
-          .serialize(),
-      );
+    safeTransferFrom(
+      new Args()
+        .add('')
+        .add(user2Address)
+        .add(u256.Zero)
+        .add(u256.from(100))
+        .add([] as StaticArray<u8>)
+        .serialize(),
+    );
   });
 
   throws('ERC1155BalanceOverflow', () => {
@@ -419,28 +419,28 @@ describe('safeBatchTransferFrom', () => {
 
   throws('ERC1155InvalidReceiver', () => {
     _mint(user1Address, u256.Zero, u256.from(100), []),
-      safeBatchTransferFrom(
-        new Args()
-          .add(user1Address)
-          .add('')
-          .add([u256.Zero])
-          .add([u256.from(100)])
-          .add([] as StaticArray<u8>)
-          .serialize(),
-      );
+    safeBatchTransferFrom(
+      new Args()
+        .add(user1Address)
+        .add('')
+        .add([u256.Zero])
+        .add([u256.from(100)])
+        .add([] as StaticArray<u8>)
+        .serialize(),
+    );
   });
 
   throws('ERC1155InvalidSender', () => {
     _mint(user1Address, u256.Zero, u256.from(100), []),
-      safeBatchTransferFrom(
-        new Args()
-          .add('')
-          .add(user2Address)
-          .add([u256.Zero])
-          .add([u256.from(100)])
-          .add([] as StaticArray<u8>)
-          .serialize(),
-      );
+    safeBatchTransferFrom(
+      new Args()
+        .add('')
+        .add(user2Address)
+        .add([u256.Zero])
+        .add([u256.from(100)])
+        .add([] as StaticArray<u8>)
+        .serialize(),
+    );
   });
 
   throws('ERC1155BalanceOverflow', () => {
@@ -477,7 +477,7 @@ describe('_setURI', () => {
 
     _setURI(newUri);
 
-    expect(uri(new Args().add([u256.Zero]).serialize())).toStrictEqual(
+    expect(uri(new Args().add(u256.Zero).serialize())).toStrictEqual(
       stringToBytes(newUri),
     );
   });
